@@ -1,0 +1,17 @@
+Package: SMCL
+Type: Package
+Title: Utilities for common tasks in the SensoriMotor Control Lab.
+Version: 0.0.0.9000
+Authors@R: c(person("Marius", "'t Hart", email = "thartbm@gmail.com",
+                  role = c("aut", "cre")),
+             person("Denise", "Henriques", email = "deniseh@yorku.ca", role = "aut"))
+Maintainer: Marius 't Hart <thartbm@gmail.com>
+Description: This package provides functions used to analyse reach
+    trajectory data used in the Sensorimotor Control Lab. 
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+LinkingTo: 
+RoxygenNote: 6.1.0
+Depends: R (>= 2.10)
+Imports: 

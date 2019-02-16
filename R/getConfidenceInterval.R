@@ -1,0 +1,70 @@
+
+
+# roxygen lines to create man pages:
+
+#' @title Get a confidence interval for a summary statistic of a numeric vector.
+#' 
+#' data, variance = var(data), conf.level = 0.95, method='t-distr', FUN=mean)
+#' 
+#' 
+#' @param data A numeric vector.
+#' @param variance Set the variance (e.g. when the population variance is known). 
+#' Only used for method='t-distr'.
+#' @param conf.level Set the confidence level (higher than .50, lower than 1.00).
+#' @param method One of 't-distr' or 'bootstrap' to either use the sample 
+#' t-distribution to _calculate_ the confidence interval or to bootstrap it by
+#' resampling from the sample in 'data'. Using the sample t-distribution can 
+#' be much faster and allows overriding the sample variance, but adds the
+#' requirement that the sample actually has a t-distribution and can only be done
+#' for the mean of the data. Bootstrapping is slower but works on any data 
+#' distribution and allows other descriptors like the median by setting FUN.
+#' @param resamples The number of samples to draw with resplacement from the data
+#' to bootstrap values of the descriptor.
+#' @param FUN The function to use as descriptor for every sample when bootstrapping. 
+#' @return A vector with the upper and lower bound of the confidence interval.
+#' @description Calculate or bootstrap a confidence interval.
+#' @details Tell a story here.
+#' @examples
+#' # for normally distributed data, using a t-interval is fine:
+#' normal <- rnorm(1000)
+#' getConfidenceInterval(normal)
+#' getConfidenceInterval(normal, variance=1)
+#' # but perhaps we want to bootstrap it for other distributions:
+#' uniform <- runif(1000)
+#' getConfidenceInterval(uniform)
+#' getConfidenceInterval(uniform,method='bootstrap')
+#' 
+#' # bootrstrap and t-distribution confidence for both samples.
+#' # calculate the time it takes as well.
+#' 
+#' @export
+
+getConfidenceInterval <- function(data, variance = var(data), conf.level = 0.95, method='t-distr', resamples=1000, FUN=mean) {
+  
+  if (method %in% c('t-distr','t')) {
+    
+    z = qt((1 - conf.level)/2, df = length(data) - 1, lower.tail = FALSE)
+    
+    xbar = mean(data)
+    sdx = sqrt(variance/length(data))
+    
+    return(c(xbar - z * sdx, xbar + z * sdx))
+    
+  }
+  
+  if (method %in% c('bootstrap','b')) {
+    
+    data <- data[which(is.finite(data))] #need is.finite due to NA values
+    
+    samplematrix <- matrix(sample(data, size = resamples*length(data), replace = TRUE), nrow = resamples)
+    #apply mean function to this new matrix
+    BS <- apply(samplematrix, c(1), FUN=FUN) 
+    
+    lo <- (1-conf.level)/2.
+    hi <- 1 - lo
+    
+    return(quantile(BS, probs = c(lo,hi)))
+    
+  }
+  
+}
