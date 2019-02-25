@@ -1,5 +1,5 @@
 # SMCL
-Utilities for common tasks in the SensoriMotor Control Lab.
+Utilities for common data analysis tasks in the SensoriMotor Control Lab.
 
 ## Installing the package in R
 
