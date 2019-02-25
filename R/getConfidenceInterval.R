@@ -3,21 +3,17 @@
 # roxygen lines to create man pages:
 
 #' @title Get a confidence interval for a summary statistic of a numeric vector.
-#' 
-#' data, variance = var(data), conf.level = 0.95, method='t-distr', FUN=mean)
-#' 
-#' 
 #' @param data A numeric vector.
 #' @param variance Set the variance (e.g. when the population variance is known). 
 #' Only used for method='t-distr'.
-#' @param conf.level Set the confidence level (higher than .50, lower than 1.00).
+#' @param conf.level Set the confidence level (.50 < conf.level < 1.00, default: 0.95).
 #' @param method One of 't-distr' or 'bootstrap' to either use the sample 
 #' t-distribution to _calculate_ the confidence interval or to bootstrap it by
 #' resampling from the sample in 'data'. Using the sample t-distribution can 
-#' be much faster and allows overriding the sample variance, but adds the
-#' requirement that the sample actually has a t-distribution and can only be done
-#' for the mean of the data. Bootstrapping is slower but works on any data 
-#' distribution and allows other descriptors like the median by setting FUN.
+#' be much faster and allows overriding the sample variance, and according to 
+#' the central limit theorom, the distribution of sample means is normal, so that is fine.
+#' Bootstrapping is slower but works on any data distribution and allows other
+#' descriptors like the median, or variance by setting FUN.
 #' @param resamples The number of samples to draw with resplacement from the data
 #' to bootstrap values of the descriptor.
 #' @param FUN The function to use as descriptor for every sample when bootstrapping. 
@@ -29,13 +25,11 @@
 #' normal <- rnorm(1000)
 #' getConfidenceInterval(normal)
 #' getConfidenceInterval(normal, variance=1)
-#' # but perhaps we want to bootstrap it for other distributions:
-#' uniform <- runif(1000)
-#' getConfidenceInterval(uniform)
-#' getConfidenceInterval(uniform,method='bootstrap')
 #' 
-#' # bootrstrap and t-distribution confidence for both samples.
-#' # calculate the time it takes as well.
+#' # but perhaps we want to bootstrap it for other distributions:
+#' exponential <- rexp(1000)
+#' getConfidenceInterval(exponential)
+#' getConfidenceInterval(exponential,method='bootstrap')
 #' 
 #' @export
 
@@ -52,12 +46,13 @@ getConfidenceInterval <- function(data, variance = var(data), conf.level = 0.95,
     
   }
   
+  # add sample z-distribution?
+  
   if (method %in% c('bootstrap','b')) {
     
     data <- data[which(is.finite(data))] #need is.finite due to NA values
     
     samplematrix <- matrix(sample(data, size = resamples*length(data), replace = TRUE), nrow = resamples)
-    #apply mean function to this new matrix
     BS <- apply(samplematrix, c(1), FUN=FUN) 
     
     lo <- (1-conf.level)/2.
