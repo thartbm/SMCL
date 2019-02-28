@@ -1,7 +1,8 @@
 #' @title Get origin for points that should fall on a circle
 #' @param x The x-coordinates of the data.
 #' @param y The y-coordinates of the data. 
-#' @param radius The radius of the circle the data should fall on.
+#' @param radius The radius of the circle the data should fall on. Usually we 
+#' have data in centimeters, and movements of 12 centimeters.
 #' @return A vector with an x and y coordinate best fitting the circle.
 #' @description This utility function can be used to see used to find the 
 #' optimal central point, where optimal means finding the location where
