@@ -11,7 +11,39 @@
 #' @details 
 #' ?
 #' @examples
-#' ?
+#' 
+#' data("localization")
+#' 
+#' localization_aligned <- convert2cm(localization_aligned, from='r')
+#' localization_aligned <- convert2cm(localization_aligned, from='t')
+#' 
+#' par(mfrow=c(1,2))
+#' 
+#' plot(localization_aligned$tapx_cm, localization_aligned$tapy_cm, main='aligned',xlab='cm', ylab='cm', asp=1,bty='n', xlim=c(-2,12),ylim=c(-2,12),col='blue')
+#' segments(localization_aligned$tapx_cm, localization_aligned$tapy_cm, localization_aligned$handx_cm, localization_aligned$handy_cm, col='blue')
+#' lines(c(-1,11),c(0,0),col='gray')
+#' lines(c(0,0),c(-1,11),col='gray')
+#' lines(cos(seq(0,pi/2,pi/200))*10,sin(seq(0,pi/2,pi/200))*10, col='gray')
+#' centre <- circleFit(localization_aligned$tapx_cm, localization_aligned$tapy_cm, radius=10)
+#' points(centre['x'], centre['y'], col='red')
+#' lines( (cos(seq(0,pi/2,pi/200))*10) + centre['x'], (sin(seq(0,pi/2,pi/200))*10) + centre['y'], col='red', lty=2)
+#' points(localization_aligned$tapx_cm - centre['x'], localization_aligned$tapy_cm - centre['y'], col='green')
+#' segments(localization_aligned$tapx_cm - centre['x'], localization_aligned$tapy_cm - centre['y'], localization_aligned$handx_cm, localization_aligned$handy_cm,, col='green')
+#' 
+#' 
+#' localization_unaligned <- convert2cm(localization_unaligned, from='r')
+#' localization_unaligned <- convert2cm(localization_unaligned, from='t')
+#' 
+#' plot(localization_unaligned$tapx_cm, localization_unaligned$tapy_cm, main='unaligned',xlab='cm', ylab='cm', asp=1,bty='n', xlim=c(-2,12),ylim=c(-2,12),col='blue')
+#' segments(localization_unaligned$tapx_cm, localization_unaligned$tapy_cm, localization_unaligned$handx_cm, localization_unaligned$handy_cm, col='blue')
+#' lines(c(-1,11),c(0,0),col='gray')
+#' lines(c(0,0),c(-1,11),col='gray')
+#' lines(cos(seq(0,pi/2,pi/200))*10,sin(seq(0,pi/2,pi/200))*10, col='gray')
+#' centre <- circleFit(localization_unaligned$tapx_cm, localization_unaligned$tapy_cm, radius=10)
+#' points(centre['x'], centre['y'], col='red')
+#' lines( (cos(seq(0,pi/2,pi/200))*10) + centre['x'], (sin(seq(0,pi/2,pi/200))*10) + centre['y'], col='red', lty=2)
+#' points(localization_unaligned$tapx_cm - centre['x'], localization_unaligned$tapy_cm - centre['y'], col='green')
+#' segments(localization_unaligned$tapx_cm - centre['x'], localization_unaligned$tapy_cm - centre['y'], localization_unaligned$handx_cm, localization_unaligned$handy_cm,, col='green')
 #' @export
 circleFit <- function(x, y, radius=12) {
   
