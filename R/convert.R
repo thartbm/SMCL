@@ -1,4 +1,7 @@
 
+
+# THIS DOES NOT CONVERT THE HOME POSITION IN THE LOCALIZATION EXAMPLE...
+
 convert2cm <- function(df, scale=NULL, home=NULL, from, replace=TRUE) {
   
   if (from %in% c('tap','touchscreen','t')) {
@@ -9,10 +12,10 @@ convert2cm <- function(df, scale=NULL, home=NULL, from, replace=TRUE) {
     # set default scale / home, if undefined:
     # (might get them from somewhere else instead of the function definition at some point)
     if (is.null(scale)) {
-      scale <- c(36.2885, 30.2038)
+      scale <- c(-36.2885, 30.2038)
     }
     if (is.null(home)) {
-      home <- c(17.8, 7.6)
+      home <- c(-17.8, 7.6)
     }
   }
   
