@@ -1,7 +1,19 @@
 
 
-# THIS DOES NOT CONVERT THE HOME POSITION IN THE LOCALIZATION EXAMPLE...
-
+#' @title Conversion from the standard units of our lab's equipment to centimeters
+#' @param df A data frame with columns that have to be converted.
+#' @param from The type of equipment the data is measured with.
+#' @param scale Scale from (unit) to centimeters.
+#' @param home Location of home position, which will be (0,0).
+#' @param replace Replace the old columns, or keep them.
+#' @return The data frame is returned, with the relevant columns converted.
+#' @description 
+#' ?
+#' @details 
+#' ?
+#' @examples
+#' ?
+#' @export
 convert2cm <- function(df, scale=NULL, home=NULL, from, replace=TRUE) {
   
   if (from %in% c('tap','touchscreen','t')) {

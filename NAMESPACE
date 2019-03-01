@@ -2,4 +2,5 @@
 
 export(circleFit)
 export(circleFitError)
+export(convert2cm)
 export(getConfidenceInterval)
