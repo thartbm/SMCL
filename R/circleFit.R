@@ -25,10 +25,10 @@
 #' lines(c(0,0),c(-1,11),col='gray')
 #' lines(cos(seq(0,pi/2,pi/200))*10,sin(seq(0,pi/2,pi/200))*10, col='gray')
 #' centre <- circleFit(localization_aligned$tapx_cm, localization_aligned$tapy_cm, radius=10)
-#' points(centre['x'], centre['y'], col='red')
-#' lines( (cos(seq(0,pi/2,pi/200))*10) + centre['x'], (sin(seq(0,pi/2,pi/200))*10) + centre['y'], col='red', lty=2)
-#' points(localization_aligned$tapx_cm - centre['x'], localization_aligned$tapy_cm - centre['y'], col='green')
-#' segments(localization_aligned$tapx_cm - centre['x'], localization_aligned$tapy_cm - centre['y'], localization_aligned$handx_cm, localization_aligned$handy_cm,, col='green')
+#' points(centre$x, centre$y, col='red')
+#' lines( (cos(seq(0,pi/2,pi/200))*10) + centre$x, (sin(seq(0,pi/2,pi/200))*10) + centre$y, col='red', lty=2)
+#' points(localization_aligned$tapx_cm - centre$x, localization_aligned$tapy_cm - centre$y, col='green')
+#' segments(localization_aligned$tapx_cm - centre$x, localization_aligned$tapy_cm - centre$y, localization_aligned$handx_cm, localization_aligned$handy_cm,, col='green')
 #' 
 #' 
 #' localization_unaligned <- convert2cm(localization_unaligned, from='r')
@@ -40,16 +40,35 @@
 #' lines(c(0,0),c(-1,11),col='gray')
 #' lines(cos(seq(0,pi/2,pi/200))*10,sin(seq(0,pi/2,pi/200))*10, col='gray')
 #' centre <- circleFit(localization_unaligned$tapx_cm, localization_unaligned$tapy_cm, radius=10)
-#' points(centre['x'], centre['y'], col='red')
-#' lines( (cos(seq(0,pi/2,pi/200))*10) + centre['x'], (sin(seq(0,pi/2,pi/200))*10) + centre['y'], col='red', lty=2)
-#' points(localization_unaligned$tapx_cm - centre['x'], localization_unaligned$tapy_cm - centre['y'], col='green')
-#' segments(localization_unaligned$tapx_cm - centre['x'], localization_unaligned$tapy_cm - centre['y'], localization_unaligned$handx_cm, localization_unaligned$handy_cm,, col='green')
+#' points(centre$x, centre$y, col='red')
+#' lines( (cos(seq(0,pi/2,pi/200))*10) + centre$x, (sin(seq(0,pi/2,pi/200))*10) + centre$y, col='red', lty=2)
+#' points(localization_unaligned$tapx_cm - centre$x, localization_unaligned$tapy_cm - centre$y, col='green')
+#' segments(localization_unaligned$tapx_cm - centre$x, localization_unaligned$tapy_cm - centre$y, localization_unaligned$handx_cm, localization_unaligned$handy_cm,, col='green')
 #' @export
-circleFit <- function(x, y, radius=12) {
+circleFit <- function(x, y, radius=12, verbosity=0) {
   
-  circlefit <-  optim(par = c('x' = 0, 'y' = 0), circleFitError, gr = NULL, data.frame(x, y), radius)
+  coords  <- data.frame(x, y)
   
-  return(circlefit$par)
+  if ('optimx' %in% installed.packages()) {
+    
+    library(optimx)
+    
+    lower <- c(min(coords$x)-radius,min(coords$x)-radius)
+    upper <- c(max(coords$x)+radius,max(coords$y)+radius)
+    
+    circlefit <- optimx(par=c('x'=0, 'y'=0), circleFitError, gr = NULL, method='L-BFGS-B', lower=lower, upper=upper, coords=coords, radius=radius)
+    
+    return(list('x'=circlefit$x, 'y'=circlefit$y))
+    
+  } else {
+
+    if (verbosity > 0) cat('optimx not installed, falling back on optim\n')
+    
+    circlefit <-  optim(par = c('x'=0, 'y'=0), circleFitError, gr = NULL, coords=coords, radius=radius)
+    
+    return(list('x'=circlefit$par['x'],'y'=circlefit$par['y']))
+    
+  }
   
 }
 
@@ -75,8 +94,8 @@ circleFit <- function(x, y, radius=12) {
 #' @examples
 #' ?
 #' @export
-circleFitError <- function(par, data, radius){
+circleFitError <- function(par, coords, radius){
   
-  return(mean((sqrt((data$x - par['x'])^2 + (data$y - par['y'])^2) - radius)^2, na.rm=TRUE))
+  return(mean((sqrt((coords$x - par['x'])^2 + (coords$y - par['y'])^2) - radius)^2, na.rm=TRUE))
   
 }

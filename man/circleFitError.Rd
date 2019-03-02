@@ -5,16 +5,16 @@
 \title{Errors between coordinates' radial distance to a point and a given 
 radius}
 \usage{
-circleFitError(par, data, radius)
+circleFitError(par, coords, radius)
 }
 \arguments{
 \item{par}{A vector with elements x and y denoting the central point's 
 coordinates.}
 
-\item{data}{A data frame with columns x and y.}
-
 \item{radius}{The radius the points in the data should have relative to a 
 central point.}
+
+\item{data}{A data frame with columns x and y.}
 }
 \value{
 The mean difference between the radius and the distance between all
