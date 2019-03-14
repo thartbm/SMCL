@@ -1,3 +1,12 @@
+# I can't help but think that this is faster:
+# ask for precision (-5 to 10 digits or so)
+# multiply y values by 10^precision, and round to 0 digits
+# repeat each original x value the resulting y, and concatenate
+# now calculate the mean and sd over that vector
+
+# no scale or offset!
+
+
 
 #' @title Bootstrap the 95% confidence interval of a normal function.
 #' @param par A vector with elements x and y denoting the central point's 
