@@ -2,7 +2,7 @@
 % Please edit documentation in R/normalFit.R
 \name{bootstrapNormalPeakCI}
 \alias{bootstrapNormalPeakCI}
-\title{Bootstrap the 95% confidence interval of a normal function.}
+\title{Bootstrap the 95\% confidence interval of a normal function.}
 \usage{
 bootstrapNormalPeakCI(pos, values, bootstraps = 1000)
 }
@@ -14,15 +14,12 @@ bootstrapNormalPeakCI(pos, values, bootstraps = 1000)
 
 \item{bootstraps}{The number of bootstrapped samples (M columns) to fit
 a normal function to.}
-
-\item{par}{A vector with elements x and y denoting the central point's 
-coordinates.}
 }
 \value{
-Named numeric vector, with the 2.5%, 50% and 97.5% percentile of the
-locations of peaks of a normal function fitted to samples of the data. These
-are the upper and lower bound of the 95% confidence interval as well as the
-median.
+Named numeric vector, with the 2.5^nd, 50^th and 97.5^th percentile 
+of the locations of peaks of a normal function fitted to samples of the 
+data. These are the upper and lower bound of the 95% confidence interval as
+well as the median.
 }
 \description{
 ?

@@ -1,7 +1,5 @@
 
 
-# roxygen lines to create man pages:
-
 #' @title Get a confidence interval for a summary statistic of a numeric vector.
 #' @param data A numeric vector.
 #' @param variance Set the variance (e.g. when the population variance is known). 

@@ -1,25 +1,13 @@
-# I can't help but think that this is faster:
-# ask for precision (-5 to 10 digits or so)
-# multiply y values by 10^precision, and round to 0 digits
-# repeat each original x value the resulting y, and concatenate
-# now calculate the mean and sd over that vector
-
-# no scale or offset!
-
-
-
-#' @title Bootstrap the 95% confidence interval of a normal function.
-#' @param par A vector with elements x and y denoting the central point's 
-#' coordinates.
+#' @title Bootstrap the 95\% confidence interval of a normal function.
 #' @param pos A numeric vector with N data positions.
 #' @param values A numeric matrix with N rows and M cols giving values 
 #' (densities) from M observations at N positions.
 #' @param bootstraps The number of bootstrapped samples (M columns) to fit
 #' a normal function to.
-#' @return Named numeric vector, with the 2.5%, 50% and 97.5% percentile of the
-#' locations of peaks of a normal function fitted to samples of the data. These
-#' are the upper and lower bound of the 95% confidence interval as well as the
-#' median.
+#' @return Named numeric vector, with the 2.5^nd, 50^th and 97.5^th percentile 
+#' of the locations of peaks of a normal function fitted to samples of the 
+#' data. These are the upper and lower bound of the 95% confidence interval as
+#' well as the median.
 #' @description 
 #' ?
 #' @details 
@@ -144,3 +132,16 @@ normal <- function(par,x) {
   return(y)
   
 }
+
+
+
+
+
+# Notes ======
+
+# I can't help but think that this is faster:
+# ask for precision (-5 to 10 digits or so)
+# multiply y values by 10^precision, and round to 0 digits
+# repeat each original x value the resulting y, and concatenate
+# now calculate the mean and sd over that vector
+# no scale or offset!
