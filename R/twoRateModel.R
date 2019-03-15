@@ -114,13 +114,31 @@ twoRateMSE <- function(par, schedule, reaches) {
 #' @details
 #' ?
 #' @examples
-#' data("localization")
+#' # there is example data in this package:
+#' data("tworatedata")
 #' 
+#' # first we baseline it, and get a median for every trial:
 #' baseline <- function(reachvector,blidx) reachvector - mean(reachvector[blidx], na.rm=TRUE)
 #' tworatedata[,4:ncol(tworatedata)] <- apply(tworatedata[,4:ncol(tworatedata)], FUN=baseline, MARGIN=c(2), blidx=c(17:32))
 #' reaches <- apply(tworatedata[4:ncol(tworatedata)], FUN=median, MARGIN=c(1), na.rm=TRUE)
+#' 
+#' # and we extract the schedule:
 #' schedule <- tworatedata$schedule
-#' towRateFit(schedule, reaches)
+#' 
+#' # now we can fit the model to the reaches, given the schedule:
+#' par = twoRateFit(schedule, reaches)
+#' 
+#' # and plot that:
+#' model <- twoRateModel(par=par, schedule=schedule)
+#' plot(reaches,type='l',col='#333333',xlab='trial',ylab='reach deviation [deg]',xlim=c(0,165),ylim=c(-35,35),bty='n',ax=F)
+#' lines(c(1,33,33,133,133,145,145),c(0,0,30,30,-30,-30,0),col='#AAAAAA')
+#' lines(c(145,164),c(0,0),col='#AAAAAA',lty=2)
+#' lines(model$slow,col='blue')
+#' lines(model$fast,col='red')
+#' lines(model$total,col='purple')
+#' axis(1,c(1,32,132,144,164),las=2)
+#' axis(2,c(-30,-15,0,15,30))
+#' 
 #' @export
 twoRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6) {
   
@@ -139,7 +157,7 @@ twoRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6) {
     allfits <- do.call("rbind",
                        apply( searchgrid[order(MSE)[1:gridfits],],
                               MARGIN=c(1),
-                              FUN=optimx,
+                              FUN=optimx::optimx,
                               fn=twoRateMSE,
                               method='L-BFGS-B',
                               lower=c(0,0,0,0),
@@ -151,7 +169,7 @@ twoRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6) {
     win <- allfits[order(allfits$value)[1],]
     
     # return the best parameters:
-    return(win[1:4])
+    return(unlist(win[1:4]))
     
   } else {
     
