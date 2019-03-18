@@ -151,7 +151,9 @@ twoRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6) {
   # evaluate starting positions:
   MSE <- apply(searchgrid, FUN=twoRateMSE, MARGIN=c(1), schedule=schedule, reaches=reaches)
   
-  if ('optimx' %in% installed.packages()) {
+  opimxInstalled <- require("optimx")
+  
+  if (optimxInstalled) {
     
     # run optimx on the best starting positions:
     allfits <- do.call("rbind",
