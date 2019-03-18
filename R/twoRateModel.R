@@ -151,7 +151,7 @@ twoRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6) {
   # evaluate starting positions:
   MSE <- apply(searchgrid, FUN=twoRateMSE, MARGIN=c(1), schedule=schedule, reaches=reaches)
   
-  opimxInstalled <- require("optimx")
+  optimxInstalled <- require("optimx")
   
   if (optimxInstalled) {
     
@@ -174,6 +174,8 @@ twoRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6) {
     return(unlist(win[1:4]))
     
   } else {
+    
+    cat('(consider installing optimx, falling back on optim now)\n')
     
     # use optim with Nelder-Mead after all:
     allfits <- do.call("rbind",
