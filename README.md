@@ -5,7 +5,7 @@ Utilities for common data analysis tasks in the SensoriMotor Control Lab.
 
 First do: 
 
-`install.packages('devtools','Rcpp')`
+`install.packages('devtools')`
 
 Then install with: 
 
