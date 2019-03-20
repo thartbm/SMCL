@@ -63,9 +63,9 @@ simpleRateModel <- function(par, schedule) {
 #' @export
 simpleRateMSE <- function(par, schedule, reaches) {
   
-  bigError <- mean(schedule^2, na.rm=TRUE) * 2
+  #bigError <- mean(schedule^2, na.rm=TRUE) * 2
   
-  return( mean((simpleRateModel(par, schedule)$total - reaches)^2, na.rm=TRUE) )
+  return( mean((simpleRateModel(par, schedule)$output - reaches)^2, na.rm=TRUE) )
   
 }
 
@@ -98,7 +98,7 @@ simpleRateFit <- function(schedule, reaches, gridpoints=10, gridfits=4) {
     
     # run optimx on the best starting positions:
     allfits <- do.call("rbind",
-                       apply( searchgrid[order(MSE)[1:gridfits],],
+                       apply( data.frame('LR'=searchgrid[order(MSE)[1:gridfits],]),
                               MARGIN=c(1),
                               FUN=optimx::optimx,
                               fn=simpleRateMSE,
@@ -112,7 +112,7 @@ simpleRateFit <- function(schedule, reaches, gridpoints=10, gridfits=4) {
     win <- allfits[order(allfits$value)[1],]
     
     # return the best parameters:
-    return(unlist(win[1:4]))
+    return(unlist(win[1]))
     
   } else {
     
@@ -120,7 +120,7 @@ simpleRateFit <- function(schedule, reaches, gridpoints=10, gridfits=4) {
     
     # use optim with Nelder-Mead after all:
     allfits <- do.call("rbind",
-                       apply( searchgrid[order(MSE)[1:gridfits],],
+                       apply( data.frame('LR'=searchgrid[order(MSE)[1:gridfits],]),
                               MARGIN=c(1),
                               FUN=optim,
                               fn=simpleRateMSE,
