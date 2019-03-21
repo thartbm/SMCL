@@ -103,8 +103,8 @@ simpleRateFit <- function(schedule, reaches, gridpoints=10, gridfits=4) {
                               FUN=optimx::optimx,
                               fn=simpleRateMSE,
                               method='L-BFGS-B',
-                              lower=c(0,0,0,0),
-                              upper=c(1,1,1,1),
+                              lower=c(0),
+                              upper=c(1),
                               schedule=schedule,
                               reaches=reaches ) )
     
