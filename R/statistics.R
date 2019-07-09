@@ -7,10 +7,12 @@
 #' @return A number: the eta squared (effect size).
 #' @description Calculate or bootstrap a confidence interval.
 #' @details Eta-squared is a measure of effect size that expresses the 
-#' propportion of variance explained by an effect. For a t-test, that
-#' effect is the separation of the data into two groups.
+#' propportion of variance explained by an effect. For a t-test, that effect
+#' is the separation of the data into two groups. (This test does not work for 
+#' t-testsof one group against a single value and does not differentiate 
+#' between two-sample and paired-sample t-tests.)
 #' @examples
-#' show example
+#' show example?
 #' @export
 etaSquaredTtest <- function(g1,g2,na.rm=TRUE) {
   
