@@ -345,7 +345,7 @@ oneRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6) {
     win <- allfits[order(allfits$value)[1],]
     
     # return the best parameters:
-    return(unlist(win[1:4]))
+    return(unlist(win[1:2]))
     
   } else {
     
