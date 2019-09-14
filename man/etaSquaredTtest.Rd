@@ -2,16 +2,18 @@
 % Please edit documentation in R/statistics.R
 \name{etaSquaredTtest}
 \alias{etaSquaredTtest}
-\title{Get an eta-squared (for a t-test).}
+\title{Get an eta-squared effect size to accompany a t-test.}
 \usage{
-etaSquaredTtest(g1, g2, na.rm = TRUE)
+etaSquaredTtest(g1, g2 = NA, mu = 0, na.rm = TRUE)
 }
 \arguments{
 \item{g1}{A numeric vector (scores for group 1).}
 
 \item{g2}{A numeric vector (scores for group 2).}
 
-\item{na.rm}{Boolean: remove NA's from g1 and g2.}
+\item{mu}{A number for a single-sample t-test (default: 0).}
+
+\item{na.rm}{Boolean: remove NA's from g1 and g2 (default: TRUE).}
 }
 \value{
 A number: the eta squared (effect size).
@@ -21,10 +23,13 @@ Calculate or bootstrap a confidence interval.
 }
 \details{
 Eta-squared is a measure of effect size that expresses the 
-propportion of variance explained by an effect. For a t-test, that effect
-is the separation of the data into two groups. (This test does not work for 
-t-testsof one group against a single value and does not differentiate 
-between two-sample and paired-sample t-tests.)
+propportion of variance explained by an effect. For a t-test, that 'effect'
+is the separation of the data into two groups.
+There is a way to do this for two groups, as well as for a single sample,
+comparing the mean to a given number. There is no way (now) to do this for a
+two-sample t-test comparing the difference in means to a hypothetical value,
+nor does this function differentiate between single-sided or two-sided 
+t-tests.
 }
 \examples{
 show example?
