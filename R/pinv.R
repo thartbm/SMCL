@@ -8,7 +8,10 @@
 #' reason to do so is to reduce dependencies.
 #' @details Not yet.
 #' @examples
-#' Not yet.
+#' library('SMCL')
+#' M <- matrix(c(1:9),3,3)
+#' Mi <- ginv(M)
+#' zapsmall( M %*% Mi %*% M ) == zapsmall( M )
 #' @export
 ginv <- function (X, tol = sqrt(.Machine$double.eps)) 
 {
