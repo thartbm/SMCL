@@ -4,8 +4,8 @@
 #' @param X A matrix.
 #' @param tol Tolerance.
 #' @return Generalized Moore-Penrose pseudo inverse of matrix X.
-#' @description This function is simply copied from the MASS package. The only
-#' reason to do so is to reduce dependencies.
+#' @description This function is copied from the MASS package (2019-09-15).
+#' The only reason to do so is to reduce dependencies.
 #' @details Not yet.
 #' @examples
 #' library('SMCL')

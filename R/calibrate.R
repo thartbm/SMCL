@@ -37,7 +37,7 @@ calibrationParameters <- function(Mcoords,Tcoords) {
 
 
 #' @title Apply calibration polynomial to new measurements.
-#' @param P A vector with parametersalready fit to (other) data.
+#' @param P Vector of parameters fit by calibrationParameters() on other data.
 #' @param Mcoords A data frame with measured coordinates in columns x and y.
 #' @return A data frame with estimated coordinates in target reference frame.
 #' @description Not yet.

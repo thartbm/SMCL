@@ -7,7 +7,7 @@
 calibrationPolynomial(P, Mcoords)
 }
 \arguments{
-\item{P}{A vector with parametersalready fit to (other) data.}
+\item{P}{Vector of parameters fit by calibrationParameters() on other data.}
 
 \item{Mcoords}{A data frame with measured coordinates in columns x and y.}
 }
