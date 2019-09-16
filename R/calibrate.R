@@ -28,8 +28,8 @@
 #' @export
 calibrationParameters <- function(Mcoords,Tcoords) {
   
-  xW = coordW(Mcoords,Tcoords$x)
-  yW = coordW(Mcoords,Tcoords$y)
+  xW <- SMCL::coordW(Mcoords,Tcoords$x)
+  yW <- SMCL::coordW(Mcoords,Tcoords$y)
   
   return( c(as.vector(xW), as.vector(yW)) )
 
@@ -94,8 +94,9 @@ coordW <- function(Mcoords,Tcoords) {
   x <- Mcoords$x
   y <- Mcoords$y
   
-  thi <- t(matrix( rep(1,length(x)) + x + y + (x*x) + (y*y) + (x*y), 6, length(x)))
-  
+  thi <- c( rep(1,length(x)), x, y, (x*x), (y*y), (x*y))
+  thi <- t(matrix( thi, nrow=6, ncol=length(x), byrow = TRUE ))
+
   return(SMCL::ginv(thi) %*% as.matrix(Tcoords))
   
 }

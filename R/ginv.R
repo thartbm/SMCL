@@ -12,9 +12,13 @@
 #' M <- matrix(c(1:9),3,3)
 #' Mi <- ginv(M)
 #' zapsmall( M %*% Mi %*% M ) == zapsmall( M )
+#' zapsmall( Mi %*% M %*% Mi ) == zapsmall( Mi )
+#' zapsmall( t(M %*% Mi) ) == zapsmall( Mi %*% M )
+#' zapsmall( t(Mi %*% M) ) == zapsmall( M %*% Mi )
 #' @export
-ginv <- function (X, tol = sqrt(.Machine$double.eps)) 
+ginv <- function (X, tol = .Machine$double.eps*max(dim(X)) ) 
 {
+  # tol = sqrt(.Machine$double.eps)
   if (length(dim(X)) > 2L || !(is.numeric(X) || is.complex(X))) 
     stop("'X' must be a numeric or complex matrix")
   if (!is.matrix(X)) 
