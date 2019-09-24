@@ -127,7 +127,7 @@ normalErrors <- function(par, data) {
 #' @export
 normal <- function(par,x) {
   
-  y <- (1/(par['sigma']*sqrt(2*pi)))*exp(-0.5*(((x-par['mu'])/par['sigma']))^2)
+  y <- (1/(par['sigma']*sqrt(2*pi)))*exp(-0.5*(((x-par['mu'])/par['sigma']))^2) * par['scale']
   
   return(y)
   
