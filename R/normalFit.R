@@ -75,10 +75,10 @@ fitNormal <- function(values,pos,output='mu') {
   par <- c('mu'=mu, 'sigma'=sigma, 'scale'=scale, 'offset'=offset)
   
   # make the data suitable for the error function:
-  data <- data.frame(x=points, y=values)
+  data <- data.frame('x'=pos, 'y'=values)
   
   # minimize the error function
-  fit <- optim(par=par,fn=normalErrors,data=data)
+  fit <- optim(par=par,fn=SMCL::normalErrors,data=data)
   
   # if people want all parameters:
   if (output == 'par') {

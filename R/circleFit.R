@@ -56,7 +56,7 @@ circleFit <- function(x, y, radius=12, verbosity=0) {
     lower <- c(min(coords$x)-radius,min(coords$x)-radius)
     upper <- c(max(coords$x)+radius,max(coords$y)+radius)
     
-    circlefit <- optimx(par=c('x'=0, 'y'=0), circleFitError, gr = NULL, method='L-BFGS-B', lower=lower, upper=upper, coords=coords, radius=radius)
+    circlefit <- optimx(par=c('x'=0, 'y'=0), SMCL::circleFitError, gr = NULL, method='L-BFGS-B', lower=lower, upper=upper, coords=coords, radius=radius)
     
     return(list('x'=circlefit$x, 'y'=circlefit$y))
     
@@ -64,7 +64,7 @@ circleFit <- function(x, y, radius=12, verbosity=0) {
 
     if (verbosity > 0) cat('optimx not installed, falling back on optim\n')
     
-    circlefit <-  optim(par = c('x'=0, 'y'=0), circleFitError, gr = NULL, coords=coords, radius=radius)
+    circlefit <-  optim(par = c('x'=0, 'y'=0), SMCL::circleFitError, gr = NULL, coords=coords, radius=radius)
     
     return(list('x'=circlefit$par['x'],'y'=circlefit$par['y']))
     
