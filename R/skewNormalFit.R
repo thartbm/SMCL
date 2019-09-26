@@ -18,7 +18,7 @@
 #' @examples
 #' ?
 #' @export
-fitNormal <- function(data) {
+fitSkewNormal <- function(data) {
   
   # initial estimate for the mean:
   mu <- data$x[which.max(data$y)]
