@@ -27,7 +27,7 @@ fitSkewNormal <- function(data) {
   # initial estimate for lambda:
   lambda <- 1
   # initial estimate for scale:
-  scale <- (1/dnorm(mu,mean=mu,sd=sigma)) * max(data$y)
+  scale <- (1/dnorm(x=mu,mean=mu,sd=sigma)) * max(data$y)
   # initial estimate for offset:
   offset <- 0
   
@@ -36,7 +36,7 @@ fitSkewNormal <- function(data) {
   
   
   # minimize the error function
-  fit <- optim(par=par,fn=SMCL::fitNormalErrors,data=data)
+  fit <- optim(par=par,fn=SMCL::skewNormalErrors,data=data)
   
   # return fitted function:
   return(fit$par)
