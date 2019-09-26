@@ -94,7 +94,7 @@ fitNormal <- function(values,pos,output='mu') {
 #' @param par A named numeric vector with parameters mu (mean), sigma (standard
 #' deviation), offset (a number added everywhere) and scale (multiplication
 #' factor), that describe a normal function.
-#' @param pos A data frame with columns X and y data points to compare to the
+#' @param data A data frame with columns x and y: data points to compare to the
 #' normal function described by the parameters. 
 #' @return A numeric value: the mean squared error between the data and the
 #' evaluated values of the function at the same x-coordinates.
