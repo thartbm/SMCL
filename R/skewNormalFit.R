@@ -23,7 +23,7 @@ fitSkewNormal <- function(data) {
   # initial estimate for the mean:
   mu <- data$x[which.max(data$y)]
   # initial estimate for sigma:
-  sigma <- abs(mu - data$x[which.min(abs(values-(max(data$y)/2)))])
+  sigma <- abs(mu - data$x[which.min(abs(data$y-(max(data$y)/2)))])
   # initial estimate for lambda:
   lambda <- 1
   # initial estimate for scale:
