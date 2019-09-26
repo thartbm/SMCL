@@ -11,7 +11,7 @@ normalErrors(par, data)
 deviation), offset (a number added everywhere) and scale (multiplication
 factor), that describe a normal function.}
 
-\item{pos}{A data frame with columns X and y data points to compare to the
+\item{data}{A data frame with columns x and y: data points to compare to the
 normal function described by the parameters.}
 }
 \value{
