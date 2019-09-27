@@ -18,7 +18,7 @@
 #' @examples
 #' ?
 #' @export
-fitSkewNormal <- function(data) {
+fitSkewNormal <- function(data,verbosity=0) {
   
   # initial estimate for the mean:
   mu <- data$x[which.max(data$y)]
@@ -34,6 +34,9 @@ fitSkewNormal <- function(data) {
   # combine all of them:
   par <- c('mu'=mu, 'sigma'=sigma, 'lambda'=lambda, 'scale'=scale, 'offset'=offset)
   
+  if (verbosity > 0) {
+    print(par)
+  }
   
   # minimize the error function
   fit <- optim(     par=par,
