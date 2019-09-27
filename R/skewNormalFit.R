@@ -39,8 +39,8 @@ fitSkewNormal <- function(data) {
   fit <- optimx::optimx(
                     par=par,
                     fn=SMCL::skewNormalErrors,
-                    lower=c(-50,0,-5,0,-50),
-                    upper=c(50,100,5,Inf,50), 
+                    lower=c(-50, .001, -5, .001, -50),
+                    upper=c( 50,  100,  5,  Inf,  50), 
                     method='L-BFGS-B',
                     data=data)
   
