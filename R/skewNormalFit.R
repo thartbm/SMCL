@@ -25,7 +25,7 @@ fitSkewNormal <- function(data) {
   # initial estimate for sigma:
   sigma <- abs(mu - data$x[which.min(abs(data$y-(max(data$y)/2)))])
   # initial estimate for lambda:
-  lambda <- 1
+  lambda <- 0
   # initial estimate for scale:
   scale <- (1/dnorm(x=mu,mean=mu,sd=sigma)) * max(data$y)
   # initial estimate for offset:
@@ -86,7 +86,11 @@ skewNormalErrors <- function(par, data) {
 #' @export
 skewNormal <- function(par,x) {
   
-  y <- par['offset'] + (par['scale'] * fGarch::dsnorm(x, mean=par['mu'], sd=par['sigma'], xi=par['lambda']) )
+  # here's an attempt using fGarch:
+  #y <- par['offset'] + (par['scale'] * fGarch::dsnorm(x, mean=par['mu'], sd=par['sigma'], xi=par['lambda']) )
+  # VGAM: won't work - deinstalled
+  # sn: might work
+  y <- par['offset'] + (par['scale'] * sn::dsn(x=x, xi=par['mu'], omega=par['sigma'], alpha=par['lambda']))
   
   return(y)
   
