@@ -4,7 +4,7 @@
 \alias{fitSkewNormal}
 \title{Fit a skewed normal function to x and y coordinates.}
 \usage{
-fitSkewNormal(data)
+fitSkewNormal(data, verbosity = 0)
 }
 \arguments{
 \item{data}{A numeric vector with columns x and y.}

@@ -22,15 +22,19 @@ fitSkewNormal <- function(data,verbosity=0) {
   
   # initial estimate for the mean:
   mu <- data$x[which.max(data$y)]
-  # initial estimate for sigma:
-  sigma <- abs(mu - data$x[which.min(abs(data$y-(max(data$y)/2)))])
   
+  ## initial estimate for sigma:
+  #sigma <- abs(mu - data$x[which.min(abs(data$y-(max(data$y)/2)))])
+  
+  # is this better? (less accurate but more foolproof)
   sigma <- max(mu - data$x) / 2
   
   # initial estimate for lambda:
   lambda <- 0
+  
   # initial estimate for scale:
   scale <- (1/dnorm(x=mu,mean=mu,sd=sigma)) * max(data$y)
+  
   # initial estimate for offset:
   offset <- 0
   
