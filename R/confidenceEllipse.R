@@ -9,8 +9,12 @@
 #' ellipse. Default: 0.95.
 #' @param vectors Number of points on the ellipse, equally spaced angularly,
 #' not in absolute distance.
-#' @return A data frame with `vectors` rows, and 2 columns: `x` and `y` with
-#' coordinates of an ellipse containing `interval` proportion of the data. 
+#' @return A list with four entries:
+#' - `XY` data frame with `vectors` rows, and 2 columns: `x` and `y` with
+#' coordinates of an ellipse containing `interval` proportion of the data
+#' - `major` semi-major-axis length (half the length of the ellipse)
+#' - `minor` semi-minor-axis length (half the width of the ellipse)
+#' - `angle` orientation of the ellipse in degrees
 #' @description 
 #' ?
 #' @details 
@@ -53,12 +57,12 @@ confidenceEllipse <- function(x, y=NA, interval=.95, vectors=100) {
   min.EigVec <- eigenvectors[,min.EigVal.ind]
   
   # calculate the angle of the largest eigen vector:
-  phi = atan2(max.EigVec[2], max.EigVec[1]) %% (2*pi);
+  phi = ( ( atan2(max.EigVec[2], max.EigVec[1]) %% (2*pi) ) / pi ) * 180;
   
   # ellipse angles:
   thetas <- seq(0,2*pi,length.out=vectors)
   
-  # this is the magic part:
+  # the "radii":
   a <- chisq.val*sqrt(max.EigVal);
   b <- chisq.val*sqrt(min.EigVal);
   
@@ -67,11 +71,17 @@ confidenceEllipse <- function(x, y=NA, interval=.95, vectors=100) {
   Y <- b*sin( thetas );
   
   # rotate the ellipse:
-  ellipse <- rotateCoordinates(df=data.frame(x=X, y=Y),angle=(phi/pi)*180,origin=c(0,0))
+  ellipse <- rotateCoordinates(df=data.frame(x=X, y=Y),angle=phi,origin=c(0,0))
   
   # re-centre:
-  ellipse$x <- ellipse$x + centre[1]
-  ellipse$y <- ellipse$y + centre[2]
+  circumference$x <- ellipse$x + centre[1]
+  circumference$y <- ellipse$y + centre[2]
+  
+  ellipse <- list()
+  ellipse[['XY']] <- circumference
+  ellipse[['major']] <- a
+  ellipse[['minor']] <- b
+  ellipse[['angle']] <- phi
   
   return(ellipse)
   
