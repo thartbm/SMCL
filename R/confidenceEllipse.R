@@ -62,7 +62,7 @@ confidenceEllipse <- function(x, y=NA, interval=.95, vectors=100) {
   # ellipse angles:
   thetas <- seq(0,2*pi,length.out=vectors)
   
-  # the "radii":
+  # the semi-major and -minor axes:
   a <- chisq.val*sqrt(max.EigVal);
   b <- chisq.val*sqrt(min.EigVal);
   
@@ -71,17 +71,18 @@ confidenceEllipse <- function(x, y=NA, interval=.95, vectors=100) {
   Y <- b*sin( thetas );
   
   # rotate the ellipse:
-  ellipse <- rotateCoordinates(df=data.frame(x=X, y=Y),angle=phi,origin=c(0,0))
+  ellipse <- SMCL::rotateCoordinates(df=data.frame(x=X, y=Y),angle=phi,origin=c(0,0))
   
   # re-centre:
   circumference$x <- ellipse$x + centre[1]
   circumference$y <- ellipse$y + centre[2]
   
   ellipse <- list()
-  ellipse[['XY']] <- circumference
+  ellipse[['poly']] <- circumference
   ellipse[['major']] <- a
   ellipse[['minor']] <- b
   ellipse[['angle']] <- phi
+  ellipse[['centre']] <- centre
   
   return(ellipse)
   
