@@ -20,6 +20,9 @@ crossings in arbitrary signals. The indices that are returned, are the
 samples right before the signal crosses zero, and if bounces are allowed,
 also the first sample of every bounce. Supposedly.
 }
+\details{
+?
+}
 \examples{
 ?
 }
