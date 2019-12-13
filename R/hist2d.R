@@ -32,6 +32,7 @@ hist2d <- function(x, y=NA, nbins=c(25,25), edges=NA) {
     df <- data.frame('x'=x, 'y'=y)
   }
   
+  # code below, somewhat based on:
   # http://stackoverflow.com/questions/18089752/r-generate-2d-histogram-from-raw-data
   
   if (is.numeric(nbins)) {
@@ -44,12 +45,15 @@ hist2d <- function(x, y=NA, nbins=c(25,25), edges=NA) {
     y.edges <- edges[[2]]
   }
   
-  freq <-  as.data.frame(table(findInterval(df[,1], x.edges),findInterval(df[,2], y.edges)))
-  freq[,1] <- as.numeric(freq[,1])
-  freq[,2] <- as.numeric(freq[,2])
+  xbincount <- findInterval(df[,1], x.edges, rightmost.closed = T, left.open = F, all.inside = F)
+  ybincount <- findInterval(df[,2], y.edges, rightmost.closed = T, left.open = F, all.inside = F)
+  xbincount <- factor(xbincount, levels=c(1:(length(x.edges)-1)))
+  ybincount <- factor(ybincount, levels=c(1:(length(y.edges)-1)))
   
-  freq2D <- matrix(data=0, ncol=length(y.edges), nrow=length(x.edges))
-  freq2D[cbind(freq[,1], freq[,2])] <- freq[,3]
+  freq2D <- as.matrix(table(xbincount,ybincount))
+  dimnames( freq2D ) <- c()
+  rownames( freq2D ) <- c()
+  colnames( freq2D ) <- c()
   
   return(list('freq2D'=freq2D, 'x.edges'=x.edges, 'y.edges'=y.edges))
   
