@@ -168,11 +168,14 @@ getReachAngleAt <- function(trialdf, location='pr0.33333', posunit='pix', timeun
   
   # calculate the angle at that point for the rotated trajectory
   # this is the angular deviation we are looking for
-  angulardeviation <- (atan2(Y[rown],X[rown]) / pi) * 180
+  angulardeviation <- (atan2(y[rown],x[rown]) / pi) * 180
   
   # put the result in the little matrix:
   reachangle[1,1] <- angulardeviation
   reachangle[1,2] <- angle
+  reachangle[1,3] <- trialdf[rown,sprintf('%sx_%s',device,posunit)]
+  reachangle[1,4] <- trialdf[rown,sprintf('%sy_%s',device,posunit)]
+  reachangle[1,5] <- t[rown]
   
   return(reachangle)
   
