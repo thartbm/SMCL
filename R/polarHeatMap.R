@@ -22,9 +22,15 @@
 #' @param bordercol The color of the borders drawn around parts of the heatmap.
 #' Default is 'white', can be any color accepted by base R graphics.
 #' @param resolution The cicrular parts of the heatmap are approximated as a 
-#' polygon, with at maximum this number of radians between vectors. Set to ~1
-#' degree by default.
+#' polygon, with at maximum this number of degrees between vectors. Default: 1.
 #' @param alpha The alpha value of the heatmap. Does not apply to the border.
+#' @param overlay Whether to put the polar heatmap into the active plot, or 
+#' create a new one. Default is FALSE: create new plot.
+#' @param origin The coordinates of the centre of the polar heatmap. Useful 
+#' when overlay=TRUE. Defaults to (0,0).
+#' @param scale The size of the polar heatmap. Useful when overlay=TRUE.
+#' Defaults to 1.
+#' @param main Main title when creating a new plot window.
 #' @return 
 #' ?
 #' @description 
@@ -34,7 +40,7 @@
 #' @examples
 #' ?
 #' @export
-polarHeatMap <- function(x,y,z,mincol=c(0.94,0.98,0.99),maxcol=c(0.06,0.82,0.88),xlim=NA,ylim=NA,xunit='degrees',border=NA,bordercol='white',resolution=(1/180)*pi,alpha=1) {
+polarHeatMap <- function(x,y,z,mincol=c(0.94,0.98,0.99),maxcol=c(0.06,0.82,0.88),xlim=NA,ylim=NA,xunit='degrees',border=NA,bordercol='white',resolution=1,alpha=1,overlay=FALSE,origin=c(0,0),scale=1,main='') {
   
   # x: area edges in some form of angles (degrees [default] or radians)
   # y: area edges in distances from the origin
@@ -56,13 +62,18 @@ polarHeatMap <- function(x,y,z,mincol=c(0.94,0.98,0.99),maxcol=c(0.06,0.82,0.88)
     ylim <- c(-1,1)
   }
   
+  resolution <- (resolution/180)*pi
+  
   #par(mar=c(4, 4, 2, 2), pin=c(width,height))
   
-  plot.new() # is this allowed... yes, but then everything else has to be manually added?
+  if (overlay == FALSE) {
   
-  plot.window(xlim = xlim, ylim = ylim, asp = 1)
-  title(main = main)
-  
+    plot.new() # is this allowed... yes, but then everything else has to be manually added?
+    
+    plot.window(xlim = xlim, ylim = ylim, asp = 1)
+    title(main = main)
+    
+  }
   # use `rgb()`
   
   # scale z to fit into 0-1 range:
@@ -97,8 +108,8 @@ polarHeatMap <- function(x,y,z,mincol=c(0.94,0.98,0.99),maxcol=c(0.06,0.82,0.88)
         y2 <- y[yi+1]
         #print(c(x1,x2))
         xs <- seq(x1,x2,length.out=ceiling(abs(diff(c(x1,x2)))/resolution))
-        X <- c(cos(xs)*y1, rev(cos(xs)*y2))
-        Y <- c(sin(xs)*y1, rev(sin(xs)*y2))
+        X <- (c(cos(xs)*y1, rev(cos(xs)*y2)) * scale) + origin[1]
+        Y <- (c(sin(xs)*y1, rev(sin(xs)*y2)) * scale) + origin[2]
         allPolygons[[length(allPolygons)+1]] <- list('x'=X, 'y'=Y, 'col'=rgb(R[xi,yi],G[xi,yi],B[xi,yi],alpha=alpha))
       }
     }

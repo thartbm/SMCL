@@ -6,8 +6,8 @@
 \usage{
 polarHeatMap(x, y, z, mincol = c(0.94, 0.98, 0.99), maxcol = c(0.06,
   0.82, 0.88), xlim = NA, ylim = NA, xunit = "degrees",
-  border = NA, bordercol = "white", resolution = (1/180) * pi,
-  alpha = 1)
+  border = NA, bordercol = "white", resolution = 1, alpha = 1,
+  overlay = FALSE, origin = c(0, 0), scale = 1, main = "")
 }
 \arguments{
 \item{x}{Vector of M+1 angular bin edges.}
@@ -42,10 +42,20 @@ is used as the linewidth of the borders.}
 Default is 'white', can be any color accepted by base R graphics.}
 
 \item{resolution}{The cicrular parts of the heatmap are approximated as a 
-polygon, with at maximum this number of radians between vectors. Set to ~1
-degree by default.}
+polygon, with at maximum this number of degrees between vectors. Default: 1.}
 
 \item{alpha}{The alpha value of the heatmap. Does not apply to the border.}
+
+\item{overlay}{Whether to put the polar heatmap into the active plot, or 
+create a new one. Default is FALSE: create new plot.}
+
+\item{origin}{The coordinates of the centre of the polar heatmap. Useful 
+when overlay=TRUE. Defaults to (0,0).}
+
+\item{scale}{The size of the polar heatmap. Useful when overlay=TRUE.
+Defaults to 1.}
+
+\item{main}{Main title when creating a new plot window.}
 }
 \value{
 ?
