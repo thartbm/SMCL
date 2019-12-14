@@ -8,7 +8,7 @@
 #' @param replace Replace the old columns, or keep them.
 #' @return The data frame is returned, with the relevant columns converted.
 #' @description 
-#' ?
+#' Perhaps we don't need this function anymore.
 #' @details 
 #' ?
 #' @examples
