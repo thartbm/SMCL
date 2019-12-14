@@ -21,7 +21,7 @@ convert2cm(df, scale = NULL, home = NULL, from, replace = TRUE)
 The data frame is returned, with the relevant columns converted.
 }
 \description{
-?
+Perhaps we don't need this function anymore.
 }
 \details{
 ?
