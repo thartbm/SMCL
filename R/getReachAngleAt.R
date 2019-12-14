@@ -1,10 +1,20 @@
 
 #' @title Angular deviation of a reach from target at a specific point. 
 #' @param trialdf Data frame representing the reach.
-#' @param location Specifies which location to use.
-#' @return Matrix with 1 row, 2 columns. First column has the angular deviation
-#' of the reach from tha target angle at the specified location in degrees. The
-#' second column has the angle of the reach in degrees.
+#' @param location String specifying which location to use.
+#' @param posunit String with the unit of x,y coordinates (pix, cm, ...)
+#' @param timeunit String with the unit of time (s, ms, ...)
+#' @param device String saying what position to use (hand, mouse, robot...)
+#' @param holdvelocity Maximum velocity for a hold.
+#' @param holdduration Minimum duration for a hold.
+#' @return Matrix with 1 row, 5 columns:
+#' 1: angular deviation
+#' 2: target angle
+#' 3: x position of location
+#' 4: y position of location
+#' 5: time of location
+#' The idea is to combine this into a larger matrix (or data frame) with
+#' multiple others, and then do further processing on that.
 #' @description
 #' ?
 #' @details
@@ -12,44 +22,54 @@
 #' @examples
 #' ?
 #' @export
-getReachAngleAt <- function(trialdf, location='maxvel') {
+getReachAngleAt <- function(trialdf, location='pr0.33333', posunit='pix', timeunit='ms', device='hand', holdvelocity=NA, holdduration=NA) {
   
+  # location (string) determines where the angle of the reach is determined, it is one of:
   
-  # location (string) determines where the angle of thereach is determines, it is one of:
-  # maxvel: maximum velocity (default)
-  # endpoint: end of the reach
-  # cmX: the last sample before this distance from home, where X is replaced by a numeral
+  # maxvel: maximum velocity
+  # endpoint: end of the reach (only makes sense after selection)
+  # cmX: the last sample before this distance from home, where X is replaced by a numeral (deprecated: use prX)
+  # prX: first sample at or beyond a proportion of distance from home to target, given by X (e.g. 'pr0.333333')
+  # hold: at a hold point; also specify how long and at what maximum velocity the hold has to be in other arguments
+  # smvX: first velocity peak in spline-smoothed trajectory, beyond a percentage distance from home to target given by X (e.g. 'smv0.10')
+  
   
   # return a matrix of two numbers:
-  reachangle = matrix(data=NA,nrow=1,ncol=2)
+  reachangle = matrix(data=NA,nrow=1,ncol=5)
+  colnames(reachangle) <- c( 'reachdeviation_deg', 
+                             'targetangle_deg', 
+                             sprintf('%sx_%s',device,posunit), 
+                             sprintf('%sy_%s',device,posunit), 
+                             sprintf('time_%s',timeunit) )
   
-  # if the trial was rejected, return empty matrix now
-  if (trialdf[1,'trialselected'] == 0) {
-    
-    return(reachangle);
-    
-  }
   
   # extract the relevant reach information
-  X <- trialdf[trialdf$sampleselected == 1,'Xrobot']
-  Y <- trialdf[trialdf$sampleselected == 1,'Yrobot']
-  MV <- trialdf[trialdf$sampleselected == 1,'maxvelocity']
-  angle <- trialdf[1,'target']
+  x <- trialdf[,sprintf('%sx_%s',device,posunit)]
+  y <- trialdf[,sprintf('%sy_%s',device,posunit)]
+  t <- trialdf[,sprintf('time_%s',timeunit)]
   
-  # print(X)
+  angle <- trialdf[1,'targetangle_deg']
+  target <- as.numeric(trialdf[1,c(sprintf('targetx_%s',posunit),sprintf('targety_%s',posunit))])
   
-  # rotate the trajectory
-  # (this avoids problems in the output of atan2 for large angles)
-  trajectory <- rotateTrajectory(X,Y,-1*angle)
-  X <- trajectory[,1]
-  Y <- trajectory[,2]
+  # always return the target angle?
+  reachangle[1,2] <- angle
+  
+  # rotate the trajectory:
+  # - avoids problems with atan2 angles around 180 / -180
+  # - puts the target at 0, so angular deviation is easy to get
+  trajectory <- SMCL::rotateCoordinates(x,y,-1*angle)
+  x <- trajectory[,1]
+  y <- trajectory[,2]
   
   # now try find the specified location in this reach:
   # if we can't find it, we need to know
   invalidlocation <- TRUE
   
-  # maximum velocity, should be in the data
+  # maximum velocity, should be a column in the data...
+  # this only happens with preprocessing or manual screening
+  # use 'smv' if this is not the case...
   if (location == 'maxvel') {
+    MV <- trialdf[,'maxvel']
     rown <- which(MV == 1)
     if (length(rown) > 1) {
       rown <- rown[1]
@@ -60,18 +80,20 @@ getReachAngleAt <- function(trialdf, location='maxvel') {
     }
     invalidlocation <- FALSE
   }
-  # end point, just the last point in the selected stretch of the reach
+  
+  # end point, just the last point in the reach
   if (location == 'endpoint') {
-    rown <- length(X)
+    rown <- length(x)
     invalidlocation <- FALSE
   }
+  
   # cutoff in centimers, the last sample before this cutoff distance is reached
   # this assumes that people don't go back, or that there is only one movement from home to target
   if (substring(location,1,2) == 'cm') {
     distance <- as.numeric(substring(location, 3))
     
     # get the distance from home:
-    dist <- sqrt(X^2 + Y^2)
+    dist <- sqrt(x^2 + y^2)
     
     # if there are no selected samples below 3 cm: return NAs
     if (length(which(dist < distance)) == 0) {
@@ -83,7 +105,63 @@ getReachAngleAt <- function(trialdf, location='maxvel') {
     invalidlocation <- FALSE
   }
   
-  # if we don't have a valid location, we can't calculate an angle to return
+  # cutoff at a percentage from home to target in whatever unit is used
+  if (substring(location,1,2) == 'pr') {
+    distance <- as.numeric(substring(location, 3))
+    #distance <- distance * sqrt(trialdf$targetx_pix[1]^2 + trialdf$targety_pix[1]^2)
+    distance <- distance * sqrt(sum(target^2))
+    
+    # get the distance from home:
+    dist <- sqrt(x^2 + y^2)
+    
+    # if there are no selected samples above 3 cm: return NAs
+    if (length(which(dist > distance)) == 0) {
+      return(reachangle)
+    }
+    
+    # find the first sample, where dist > X
+    rown <- min(which(dist > distance))
+    invalidlocation <- FALSE
+  }
+  
+  # find the first 'hold':
+  if (substring(location,1,4) == 'hold') {
+    holddistance <- as.numeric(substring(location, 5))
+    #holdvelocity
+    #holdduration # in timeunit: 's' or 'ms'?
+    
+    
+    
+  }
+  
+  # use smooth-splined trajectory to get angle at *first* velocity peak:
+  if (substring(location,1,3) == 'smv') {
+    
+    # how far does the vleocity peak have to be away from the home position
+    # (as percentage of home-target distance)
+    if (nchar(location) > 3) {
+      distance <- as.numeric(substring(location, 4))
+    } else {
+      distance <- 0.05
+    }
+    distance <- distance * sqrt(sum(target^2))
+    
+    dist <- sqrt(x^2 + y^2)
+    
+    VT <- getSplinedVelocity(x, y, t, spar=0.20)
+    v <- c(0, 0, VT$velocity)
+    
+    peaks <- which(diff(sign(diff(v))) == -2 & dist > distance)
+    if (length(peaks) > 0) {
+      rown <- peaks[1]
+      invalidlocation <- FALSE
+    }
+    
+  }
+  
+  
+  
+  # if we don't have a valid location, we can't calculate an angle
   if (invalidlocation) {
     return(reachangle)
   }

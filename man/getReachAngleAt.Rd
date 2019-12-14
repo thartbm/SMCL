@@ -4,17 +4,34 @@
 \alias{getReachAngleAt}
 \title{Angular deviation of a reach from target at a specific point.}
 \usage{
-getReachAngleAt(trialdf, location = "maxvel")
+getReachAngleAt(trialdf, location = "pr0.33333", posunit = "pix",
+  timeunit = "ms", device = "hand", holdvelocity = NA,
+  holdduration = NA)
 }
 \arguments{
 \item{trialdf}{Data frame representing the reach.}
 
-\item{location}{Specifies which location to use.}
+\item{location}{String specifying which location to use.}
+
+\item{posunit}{String with the unit of x,y coordinates (pix, cm, ...)}
+
+\item{timeunit}{String with the unit of time (s, ms, ...)}
+
+\item{device}{String saying what position to use (hand, mouse, robot...)}
+
+\item{holdvelocity}{Maximum velocity for a hold.}
+
+\item{holdduration}{Minimum duration for a hold.}
 }
 \value{
-Matrix with 1 row, 2 columns. First column has the angular deviation
-of the reach from tha target angle at the specified location in degrees. The
-second column has the angle of the reach in degrees.
+Matrix with 1 row, 5 columns:
+1: angular deviation
+2: target angle
+3: x position of location
+4: y position of location
+5: time of location
+The idea is to combine this into a larger matrix (or data frame) with
+multiple others, and then do further processing on that.
 }
 \description{
 ?
