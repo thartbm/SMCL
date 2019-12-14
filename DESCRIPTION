@@ -8,7 +8,7 @@ Authors@R: c(person("Marius", "'t Hart", email = "thartbm@gmail.com",
 Maintainer: Marius 't Hart <thartbm@gmail.com>
 Description: This package provides functions used to analyse reach
     trajectory data used in the Sensorimotor Control Lab. 
-License: GPL-3
+License: GPL-3 + file LICENSE
 Encoding: UTF-8
 RoxygenNote: 6.1.1
 Depends: R (>= 2.10)
