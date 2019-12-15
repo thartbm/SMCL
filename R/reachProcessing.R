@@ -180,3 +180,105 @@ getReachAngleAt <- function(trialdf, location='pr0.33333', posunit='pix', timeun
   return(reachangle)
   
 }
+
+
+#' @title Trim a data frame describing a reach to the interesting part. 
+#' @param trialdf Data frame representing the reach.
+#' @param homeStart If the participant has to get to the home position before
+#' starting the out-and-back reach, this part could be trimmed. Set `homeStart`
+#' to a numeric value expressing how close the `device` has to be to the home
+#' position, specified in the same unit as `posunit`. The start of the trial
+#' will be trimmed (not returned) up to when the device is that close to the 
+#' start/home position. By default this is NA, so that this part is not 
+#' trimmed.
+#' @param targetReached If the return movement is represented in the data, this
+#' may have to be trimmed as well. This parameter sets the distance at which 
+#' the target is considered reached, and data after this point is trimmed.
+#' The target position should be in columns named "targetx_[posunit]" and 
+#' "targety_[posunit]".
+#' @param velocity Very slow movement is usually not diagnostic. _After_ the
+#' other parts of the data are trimmed, the instantaneous velocity is used as
+#' a cut-off criterion: the first part of the reach that is under the velocity
+#' criterion as a fraction of the maximum velocity in the whole reach, is 
+#' trimmed. And either the final part that is below the velocity criterion is
+#' trimmed, or everything after the first dip below the velocity criterion, 
+#' depending on the `firstMove` parameter. Set to `NA` for no velocity 
+#' criterion. By default this is set conservatively to 0.05.
+#' @param firstMove Only used if the `velocity` parameter is not `NA`. If set 
+#' to TRUE, the first part of the trajectory up to where it dips below the 
+#' velocity criterion is kept (the rest is trimmed). If FALSE, only the final
+#' part of the trajectory that goes below the velocity criterion is trimmed.
+#' @param device The position columns to use are given by "[device]x_[posunit]"
+#' in the `trialdf`, and similar for y. Can be something like 'hand', 'cursor',
+#' 'mouse', 'stylus' or 'robot'.
+#' @param posunit The unit used for the x and y position data. Could 'pix' or
+#' 'cm', or whatever is used in the data.
+#' @param timeunit The unit used for the time stamps of each sample. The column
+#' names is "time_[timeunit]".
+#' @param homepos The coordinates of the home position. Default is (0,0).
+#' @return Data frame describing the reach, minus the trimmed parts.
+#' @description
+#' ?
+#' @details
+#' ?
+#' @examples
+#' ?
+#' @export
+trimReach <- function(trialdf, homeStart=NA, targetReached=NA, velocity=0.05, firstMove=FALSE, device='hand', posunit='pix', timeunit='ms', homepos=c(0,0)) {
+  
+  targetposition <- as.numeric( trialdf[ 1, c( sprintf('targetx_%s', posunit ), sprintf( 'targety_%s', posunit ) ) ] )
+  targetposition <- targetposition - homepos
+  targetdistance <- sqrt( sum( targetposition^2 ) )
+  
+  if (!is.na(homeStart)) {
+    
+    # we need the device position, relative to the home position
+    x <- trialdf[,sprintf('%sx_%s',device,posunit)] - homepos[1]
+    y <- trialdf[,sprintf('%sy_%s',device,posunit)] - homepos[2]
+    
+    if (is.numeric(homeStart)) {
+      cutoff <- homeStart
+    }
+    
+    if (is.character((homeStart))) {
+      
+      # cutoff at a percentage from home to target in whatever unit is used
+      if (substring(location,1,2) == 'pr') {
+        
+        cutoff <- as.numeric(substring(location, 3))
+        cutoff <- cutoff * targetdistance
+
+      }
+      
+    }
+    
+    # get the distance from home:
+    devicedist <- sqrt(x^2 + y^2)
+    
+    if (devicedist[1] > cutoff) {
+      
+      # find the first sample, where device is closer to home than the cutoff:
+      if (any(devicedist < cutoff)) {
+        rown <- max(1, min(which(devicedist < cutoff)) - 1)
+        trialdf <- trialdf[c(rown,dim(trialdf)[1]),]
+      }
+      
+    }
+    
+  }
+  
+  if (!is.na(targetReached)) {
+    
+    # stuff
+    
+  }
+  
+  if (!is.na(velocity)) {
+    
+    # stuff
+    
+  }
+  
+  return(trialdf)
+  
+}
