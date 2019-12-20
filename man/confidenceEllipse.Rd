@@ -21,11 +21,12 @@ equal size with Y coordinates.}
 }
 \value{
 A list with four entries:
-- `XY` data frame with `vectors` rows, and 2 columns: `x` and `y` with
+- `poly` data frame with `vectors` rows, and 2 columns: `x` and `y` with
 coordinates of an ellipse containing `interval` proportion of the data
 - `major` semi-major-axis length (half the length of the ellipse)
 - `minor` semi-minor-axis length (half the width of the ellipse)
 - `angle` orientation of the ellipse in degrees
+- `centre` the centre of the ellipse
 }
 \description{
 ?

@@ -10,11 +10,12 @@
 #' @param vectors Number of points on the ellipse, equally spaced angularly,
 #' not in absolute distance.
 #' @return A list with four entries:
-#' - `XY` data frame with `vectors` rows, and 2 columns: `x` and `y` with
+#' - `poly` data frame with `vectors` rows, and 2 columns: `x` and `y` with
 #' coordinates of an ellipse containing `interval` proportion of the data
 #' - `major` semi-major-axis length (half the length of the ellipse)
 #' - `minor` semi-minor-axis length (half the width of the ellipse)
 #' - `angle` orientation of the ellipse in degrees
+#' - `centre` the centre of the ellipse
 #' @description 
 #' ?
 #' @details 
@@ -74,8 +75,8 @@ confidenceEllipse <- function(x, y=NA, interval=.95, vectors=100) {
   ellipse <- SMCL::rotateCoordinates(df=data.frame(x=X, y=Y),angle=phi,origin=c(0,0))
   
   # re-centre:
-  circumference$x <- ellipse$x + centre[1]
-  circumference$y <- ellipse$y + centre[2]
+  circumference <- data.frame('x' = ellipse$x + centre[1],
+                              'y' = ellipse$y + centre[2])
   
   ellipse <- list()
   ellipse[['poly']] <- circumference
