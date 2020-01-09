@@ -1,4 +1,64 @@
 
+
+#' @title Get smooth splined coordinate interpolation over time
+#' @param x X-coordinates of a trajectory
+#' @param y Y-coordinates of a trajectory
+#' @param t Timestamps of the X and Y coordinates
+#' @param spar Smoothing parameter for the spline, default: 0.01 (0.00-1.00)
+#' @return This function returns a data frame with smooth spline interpolated
+#' trajectory given by x, y and t.
+#' @description 
+#' (Should one day allow data frame or matrix input as well...)
+#' @details 
+#' ?
+#' @examples
+#' ?
+#' @export
+getSplinedTrajectory <- function(x, y, t, length.out=length(t), spar=0.01) {
+  
+  spl.Xt <- smooth.spline(t, x, spar=spar, keep.data=F) 
+  spl.Yt <- smooth.spline(t, y, spar=spar, keep.data=F) 
+  
+  tt <- seq(min(t), max(t), length.out = length.out)
+  
+  XX <- predict(spl.Xt, tt)$y
+  YY <- predict(spl.Yt, tt)$y
+  
+  return(data.frame('x'=XX, 'y'=YY, 't'=tt))
+  
+}
+
+#' @title Get velocity profile after spline interpolation
+#' @param X X-coordinates of a trajectory
+#' @param Y Y-coordinates of a trajectory
+#' @param t Timestamps of the X and Y coordinates
+#' @param spar Smoothing parameter for the spline, default: 0.01 (0.00-1.00)
+#' @return This function returns a data frame with spline interpolated velocity
+#' and time for the trajectory given by x, y and t. The first velocity sample
+#' will always be zero.
+#' @description 
+#' ?
+#' @details 
+#' ?
+#' @examples
+#' ?
+#' @export
+getSplinedVelocity <- function(x, y, t, spar=0.01) {
+  
+  # spline interpolate the X and Y coordinates over time:
+  # (separately... no multi-dimensional splining in base R)
+  ST <- SMCL::getSplinedTrajectory(x, y, t, length.out=length(t), spar=spar)
+  
+  # velocity on spline interpolated data
+  V <- sqrt(diff(ST$x)^2 + diff(ST$y)^2) / diff(ST$t)
+  # add velocity = 0 for first sample:
+  V <- c(0, V)
+  
+  return(data.frame('velocity'=V, 'time'=ST$t))
+  
+}
+
+
 #' @title Angular deviation of a reach from target at a specific point. 
 #' @param trialdf Data frame representing the reach.
 #' @param location String specifying which location to use.
@@ -183,19 +243,23 @@ getReachAngleAt <- function(trialdf, location='pr0.33333', posunit='pix', timeun
 
 
 #' @title Trim a data frame describing a reach to the interesting part. 
-#' @param trialdf Data frame representing the reach.
+#' @param trialdf Data frame representing the reach with variables in columns
+#' (named consistent with settings below) and samples in rows.
 #' @param homeStart If the participant has to get to the home position before
 #' starting the out-and-back reach, this part could be trimmed. Set `homeStart`
 #' to a numeric value expressing how close the `device` has to be to the home
 #' position, specified in the same unit as `posunit`. The start of the trial
 #' will be trimmed (not returned) up to when the device is that close to the 
 #' start/home position. By default this is NA, so that this part is not 
-#' trimmed.
+#' trimmed. If this is a character variable, starting with "pr" and ending with
+#' numbers, those numbers should indicate a proportion of the home-to-target
+#' distance to use as cutoff value for trimming the first part of the reach.
 #' @param targetReached If the return movement is represented in the data, this
-#' may have to be trimmed as well. This parameter sets the distance at which 
+#' may have to be trimmed as well. This parameter sets the *distance* at which 
 #' the target is considered reached, and data after this point is trimmed.
 #' The target position should be in columns named "targetx_[posunit]" and 
-#' "targety_[posunit]".
+#' "targety_[posunit]". This argument is a numeric variable given in the 
+#' position unit specified later on.
 #' @param velocity Very slow movement is usually not diagnostic. _After_ the
 #' other parts of the data are trimmed, the instantaneous velocity is used as
 #' a cut-off criterion: the first part of the reach that is under the velocity
@@ -204,17 +268,43 @@ getReachAngleAt <- function(trialdf, location='pr0.33333', posunit='pix', timeun
 #' trimmed, or everything after the first dip below the velocity criterion, 
 #' depending on the `firstMove` parameter. Set to `NA` for no velocity 
 #' criterion. By default this is set conservatively to 0.05.
+#' 
+#' May give unexpected results if used with `untilHold`.
 #' @param firstMove Only used if the `velocity` parameter is not `NA`. If set 
 #' to TRUE, the first part of the trajectory up to where it dips below the 
 #' velocity criterion is kept (the rest is trimmed). If FALSE, only the final
 #' part of the trajectory that goes below the velocity criterion is trimmed.
+#' 
+#' May give unexpected results if used in combination with `untilHold`.
+#' @param untilHold Not used if set to `NA` (default). Otherwise, this should
+#' be a list with four named entries:
+#' 
+#' "kind": character setting one of (currently) two ways to determine a hold
+#' 
+#' "mindist": numeric: minimum distance from home that the hold has to occur 
+#' at, given in position units as set below
+#' 
+#' "threshold": numeric setting maximum velocity or distance in position and
+#' time units as set below
+#'   
+#' "epoch": numeric duration of the hold in time units specified below
+#' 
+#' `kind` can be one of "sample-velocity" or "epoch-distance". When it is
+#' "sample-velocity", a sequence of samples spanning the hold epoch all should
+#' have velocity below the threshold value. When it is "epoch-distance" the 
+#' total distance moved during the epoch should be beloc the threshold value.
+#' 
+#' All data _after_ the hold is trimmed, but the hold itself is not.
+#' 
+#' May give unexpected results if used in combination with `firstMove` or any
+#' `velocity` criterion.
 #' @param device The position columns to use are given by "[device]x_[posunit]"
 #' in the `trialdf`, and similar for y. Can be something like 'hand', 'cursor',
 #' 'mouse', 'stylus' or 'robot'.
-#' @param posunit The unit used for the x and y position data. Could 'pix' or
-#' 'cm', or whatever is used in the data.
+#' @param posunit The unit used for the x and y position data. Could be "pix"
+#' or "cm", or whatever is used in the data. Default: "pix".
 #' @param timeunit The unit used for the time stamps of each sample. The column
-#' names is "time_[timeunit]".
+#' names is "time_[timeunit]". Default: "ms"
 #' @param homepos The coordinates of the home position. Default is (0,0).
 #' @return Data frame describing the reach, minus the trimmed parts.
 #' @description
@@ -224,7 +314,7 @@ getReachAngleAt <- function(trialdf, location='pr0.33333', posunit='pix', timeun
 #' @examples
 #' ?
 #' @export
-trimReach <- function(trialdf, homeStart=NA, targetReached=NA, velocity=0.05, firstMove=FALSE, device='hand', posunit='pix', timeunit='ms', homepos=c(0,0)) {
+trimReach <- function(trialdf, homeStart=NA, targetReached=NA, velocity=0.05, firstMove=FALSE, untilHold=NA, device='hand', posunit='pix', timeunit='ms', homepos=c(0,0)) {
   
   targetposition <- as.numeric( trialdf[ 1, c( sprintf('targetx_%s', posunit ), sprintf( 'targety_%s', posunit ) ) ] )
   targetposition <- targetposition - homepos
@@ -267,15 +357,89 @@ trimReach <- function(trialdf, homeStart=NA, targetReached=NA, velocity=0.05, fi
     
   }
   
-  if (!is.na(targetReached)) {
+  if (!is.na(targetReached) && is.numeric(targetReached)) {
     
-    # stuff
+    # we need the trajectroy and device position, relative to the home position
+    x <- trialdf[,sprintf('%sx_%s',device,posunit)] - homepos[1]
+    y <- trialdf[,sprintf('%sy_%s',device,posunit)] - homepos[2]
+    targetx <- trialdf[1,sprintf('targetx_%s',posunit)] - homepos[1]
+    targety <- trialdf[1,sprintf('targety_%s',posunit)] - homepos[1]
+    
+    # distance to target for every sample:
+    dist <- sqrt((x - targetx)^2 + (y - targety)^2)
+    
+    crit <- which(dist < targetReached)
+    # we only trim if the target is actually reached:
+    if (length(crit) > 0) {
+      trialdf <- trialdf[c(1:crit[1]),]
+    }
+    
+  }
+  
+  if (!is.na(untilHold) && is.list(untilHold) && (length(untilHold) == 3)) {
+    
+    # here we use sample-to-sample velocity as used during the experiment
+    # (so no smoothed / splined trajectory)
+    
+    # first we get the necessary variables from the data frame:
+    x <- trialdf[,sprintf('%sx_%s',device,posunit)] - homepos[1]
+    y <- trialdf[,sprintf('%sy_%s',device,posunit)] - homepos[2]
+    sample_time <- trialdf[,sprintf('time_%s',timeunit)]
+    
+    if (untilHold$kind == 'sample-velocity') {
+      # calculate instantaneous velocity:
+      velocity <- c(0,sqrt(diff(x)^2 + diff(y)^2) / diff(sample_time))
+    
+      # which samples are below the velocity criterion:
+      belowcriterion <- which(velocity < untilHold$threshold)
+     
+      # this might be helpful for non-averaged hold criterion algorithms:
+      bc_runs <- rle(belowcriterion) # no idea how to continue...
+      
+      # STUFF: NOT COMPLETE!
+      cat('sample-velocity method of determining a hold is not complete:\nnot trimming\n')
+      
+    }
+    
+    if (untilHold$kind == 'epoch-distance') {
+      
+      didx <- which(sqrt(x^2 + y^2) > untilHold$mindist)
+      
+      for (sample.idx in didx) {
+        tidx <- which((sample_time[c(1:sample.idx)]-sample_time[sample_idx]) > (-untilHold$epoch))
+        if (sum(sqrt(x[tidx]^2 + y[tidx]^2)) < untilHold$threshold) {
+          trialdf <- trialdf[c(1:tidx),]
+          break() # break out of the for-loop
+        } # if this never happens: don't trim the reach
+      }
+      
+    }
     
   }
   
   if (!is.na(velocity)) {
     
-    # stuff
+    # here we use a spline smoothed velocity signal:
+    x <- trialdf[,sprintf('%sx_%s',device,posunit)] - homepos[1]
+    y <- trialdf[,sprintf('%sy_%s',device,posunit)] - homepos[2]
+    sample_time <- trialdf[,sprintf('time_%s',timeunit)]
+    SplVel <- getSplinedVelocity(x=x, y=y, t=sample_time)
+    velocity <- SplVel$velocity
+    spline_time <- SplVel$time
+    
+    # determine numeric velocity threshold
+    
+    # see which samples are below this threshold
+    
+    if (is.logical(firstMove) && firstMove) {
+        
+      # trim after first dip below threshold (after first going above it)
+        
+    } else {
+      
+      # trim after last dip below threshold (after first going above it) 
+      
+    } 
     
   }
   
