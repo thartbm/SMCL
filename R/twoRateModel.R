@@ -539,7 +539,7 @@ seriesEffectiveSampleSize <- function(series, method='ac_one') {
         
       }
       
-      upperlimit <- quantile(shuffle_cor, probs=0.975)
+      upperlimit <- quantile(shuffle_cor, probs=0.95)
       
       if (lag_cor < upperlimit) {
         
