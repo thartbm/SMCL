@@ -370,3 +370,196 @@ oneRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6) {
   }
   
 }
+
+
+#' @title Evaluate two-rate model fits.
+#' @param groupdata A named vector with data for each group. Each element
+#' should be a list (or data frame) with 2 named entries (or columns):
+#' 
+#' "schedule": the perturbation for each trial, used for fitting models
+#' 
+#' "reaches": the actual reaches made by this group on each trial, also used
+#' for fitting models (if estN='aclag' reaches can't contain missing values)
+#' 
+#' The labels in the vector should correspond to group names. They will be used
+#' in the output, and to match specifications of N to the correct data.
+#' @param estN This is either a string, specifying a method to estimate the
+#' number of observations for calculating an AIC. Alternatively, this is a 
+#' vector with named entries where the names are equal to the groups in 
+#' `groupdata` and the value is the N to use for that group.
+#' 
+#' Named methods are the same as in `seriesEffectiveSampleSize`.
+#' @param compOne A boolean specifying whether or not to compare the two-rate
+#' model fit to a one-rate model fit for each group.
+#' @return A data frame with a row for each group. This will give the estimated
+#' parameter values, an MSE, N and AIC. It will list relative log likelihoods 
+#' too, comparing the groups two-rate AICs, as well as within each group the 
+#' AICs for a one- and two-rate model fit, if requested (see `compOne`).
+#' @description This function is part of a set of functions to fit and 
+#' evaluate the two-rate model of motor learning.
+#' @details
+#' ?
+#' @examples
+#' ?
+twoRates <- function(groupdata, estN='ac_one', compOne=FALSE) {
+  
+  groupnames <- names(groupdata)
+  
+  if (is.numeric(estN)) {
+    
+    if (!all(groupnames %in% names(estN))) {
+      stop('Not all groups in the data have an N specified.\n')
+    } else {
+      # all is good
+      # we put this in a vector that aclag will create:
+      observations <- estN
+    }
+
+
+    # all should be good now...
+  } else if (is.character(estN)) {
+    
+    observations <- c()
+    
+    # determine number of independent observations for each group:
+    for (group in groupnames) {
+      
+      # use reaches to determine number of independent observations:
+      reaches <- groupdata[group]$reaches
+      
+      observations[group] <- seriesEffectiveSampleSize(reaches, method=estN)
+    
+    }
+    
+  } else {
+    stop('Either specify "estN" as a numeric vector of N or a character naming an available method.\n')
+  }
+  
+  # now do the actual modelling on all datasets?
+  
+  
+  
+  
+}
+
+#' @title Estimate number of independent samples in a time series.
+#' @param series numeric vector with the time series data.
+#' @param method character specifying the method to find the number of 
+#' independent samples in the time series data vector.
+#' 
+#' "ac_one": this uses the auto-correlation at lag 1 as ρ, and then gets
+#' n_eff = n * ( (1−ρ)/(1+ρ) )
+#' where n is the number of trials in the sequence (default)
+#' 
+#' "ac_lag.10": this divides the number of trials by the lag at which the auto-
+#' correlation is about to go below 0.10:
+#' n_eff = n / lag
+#' (if AC is higher than 0.10, increase lag and redo, else use previous n_eff)
+#' 
+#' "ac_lag95%CI": this is similar to "ac_lag.10" but divides the number of 
+#' trials by the lag at which the autocorrelation is about to be within the 95%
+#' confidence interval, as determined by bootstrapping (with 1000 re-samples)
+#' 
+#' @return numeric value with the estimated number of independent observation
+#' @description This function is part of a set of functions to fit and 
+#' evaluate the two-rate model of motor learning.
+#' @details
+#' ?
+#' @examples
+#' ?
+seriesEffectiveSampleSize <- function(series, method='ac_one') {
+  
+  # https://dsp.stackexchange.com/questions/47560/finding-number-of-independent-samples-using-autocorrelation
+  # The "Effective" Number of Independent Observations in an An′ = n * ( (1−ρ)/(1+ρ) )utocorrelated Time Series is a defined statistical term - https://www.jstor.org/stable/2983560?seq=1#page_scan_tab_contents
+  # The number of independent observations n' of n observations with a constant variance but having a lag 1 autocorrelation ρ equals
+  #
+  # n′ = n * ( (1−ρ)/(1+ρ) )
+  #
+  # Also note this is an approximation valid for large n, [1] (reference provided by Ed V) equation 7 is more accurate for small n.
+  # [1] N.F. Zhang, "Calculation of the uncertainty of the mean of autocorrelated measurements", Metrologia 43 (2006) S276-S281.
+  
+  
+  
+  # Maybe also relevant:
+  # https://www.researchgate.net/post/How_do_you_choose_the_optimal_laglength_in_a_time_series
+  
+  
+  
+  if (method == 'ac_one') {
+  
+    # create empty vector for number of independent observations per group:
+    observations <- c()
+  
+    rho <- acf(series, lag.max=1, plot=FALSE)$acf[2]
+    
+    return( length(series) *  ((1-rho)/(1+rho)) )
+    
+  } else if (method == 'ac_lag.10') {
+  
+    critlag <- which(acf(series, lag.max=length(series)-1, plot=FALSE)$acf < 0.1)
+    
+    if (length(critlag) == 0) {
+      
+      # autocorrelation is high throughout: we have 1 observation?
+      
+      return(1)
+      
+    } else {
+      
+      # the sequence of reaches doesn't autocorrelate well throughout,
+      # so it can be split into (more or less) independent observations
+      # (but we have at least 1)
+      
+      return( max( ( length(series) / (critlag[1]-2) ), 1) )
+      
+    }
+    
+  } else if (method == 'ac_lag95%CI') {
+    
+    Neff_found <- FALSE
+    
+    critlag <- 1
+    
+    Neff <- length(series)
+    
+    while (!Neff_found) {
+      
+      lagpoints <- length(series) - critlag
+      
+      point_one <- series[c(1:lagpoints)]
+      point_two <- series[c((critlag+1):length(series))]
+      
+      lag_cor <- cor(point_one, point_two)
+      
+      shuffle_cor <- rep(NA, 1000)
+      
+      for (bootstrap in c(1:1000)) {
+        
+        shuffle_cor[bootstrap] <- cor(point_one, sample(point_two))
+        
+      }
+      
+      upperlimit <- quantile(shuffle_cor, probs=0.975)
+      
+      if (lag_cor < upperlimit) {
+        
+        return( length(series) / max((critlag - 1), 1) )
+        
+      }
+      
+      critlag <- critlag + 1
+      
+      # lag can only go up to a certain value, determined by the length of the sequence
+      if (critlag > (length(series) - 2)) {
+        
+        return( length(series) ) # or length(reaches) - 1?
+        
+      }
+      
+    }
+    
+  }
+  
+  stop('Unrecognized method for determining effective sample size.\nUse one of: ac_one, ac_lag.10 or ac_lag95%CI\n')
+  
+}
