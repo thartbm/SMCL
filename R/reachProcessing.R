@@ -430,16 +430,18 @@ trimReach <- function(trialdf, homeStart=NA, targetReached=NA, velocity=0.05, fi
     # determine numeric velocity threshold
     
     # see which samples are below this threshold
-    
-    if (is.logical(firstMove) && firstMove) {
+    if (!is.na(velocity)) {
+      if (is.logical(firstMove) && firstMove) {
         
-      # trim after first dip below threshold (after first going above it)
+        # trim after first dip below threshold (after first going above it)
         
-    } else {
-      
-      # trim after last dip below threshold (after first going above it) 
-      
-    } 
+      } else {
+        
+        # trim after last dip below threshold (after first going above it) 
+        
+      }
+      cat('velocity trimming is not completed\nnot trimming\n')
+    }
     
   }
   
