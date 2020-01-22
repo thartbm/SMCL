@@ -25,6 +25,10 @@ This function is part of a set of functions to fit and
 evaluate the two-rate model of motor learning.
 }
 \details{
+This function allows estimating model criteria based on the MSE. This is
+useful for models where no method exists to extract the log-likelihood. When
+log-likelihood can be used, see `AIC`, `logLik` and `nobs` from {stats}.
+
 The function calculates four model evaluation criteria:
 
 "AIC": Akaike's Information Criterion

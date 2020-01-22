@@ -578,6 +578,10 @@ seriesEffectiveSampleSize <- function(series, method='ac_one') {
 #' @description This function is part of a set of functions to fit and 
 #' evaluate the two-rate model of motor learning.
 #' @details
+#' This function allows estimating model criteria based on the MSE. This is
+#' useful for models where no method exists to extract the log-likelihood. When
+#' log-likelihood can be used, see `AIC`, `logLik` and `nobs` from {stats}.
+#' 
 #' The function calculates four model evaluation criteria:
 #' 
 #' "AIC": Akaike's Information Criterion
@@ -633,7 +637,7 @@ modelCriteriaMSE <- function(MSE, k, N) {
   # AIC 
   
   # previous calculation:
-  # C <- N*(log(2*pi)+1) # what is this for?
+  # C <- N*(log(2*pi)+1) # what is this for? a penalty for large number of observations?
   # AIC <- (2 * k) + N*log(MSE) + C
   
   AIC <- (N * log(MSE)) + (2 * k)
