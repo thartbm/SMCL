@@ -401,6 +401,7 @@ oneRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6) {
 #' ?
 #' @examples
 #' ?
+#' @export
 twoRates <- function(groupdata, estN='ac_one', compOne=FALSE) {
   
   groupnames <- names(groupdata)
@@ -467,6 +468,7 @@ twoRates <- function(groupdata, estN='ac_one', compOne=FALSE) {
 #' ?
 #' @examples
 #' ?
+#' @export
 seriesEffectiveSampleSize <- function(series, method='ac_one') {
   
   # https://dsp.stackexchange.com/questions/47560/finding-number-of-independent-samples-using-autocorrelation
@@ -561,5 +563,106 @@ seriesEffectiveSampleSize <- function(series, method='ac_one') {
   }
   
   stop('Unrecognized method for determining effective sample size.\nUse one of: ac_one, ac_lag.10 or ac_lag95%CI\n')
+  
+}
+
+#' @title Calculate several model evaluation criteria.
+#' @param MSE numeric: The mean squared error between the model and data. This
+#' can be a vector if multiple models are to be evaluated. If this vector has
+#' named entries, they will be used as row names in the returned data frame.
+#' @param k numeric: The number of parameters in the model. If MSE is a vector
+#' k needs to be a vector of the same length.
+#' @param N numeric: the number of independent observations (see the function:
+#' `seriesEffectiveSampleSize` for some options. (Not a vector.)
+#' @return data frame with values for several model evaluation criteria
+#' @description This function is part of a set of functions to fit and 
+#' evaluate the two-rate model of motor learning.
+#' @details
+#' The function calculates four model evaluation criteria:
+#' 
+#' "AIC": Akaike's Information Criterion
+#' 
+#' "AICc": The AIC, but with a correction for small sample sizes.
+#' 
+#' "BIC": The Bayesian Information Criterion
+#' 
+#' "HQC": The Hannan-Quinn criterion
+#' 
+#' If there are 2 or more models evaluated, the relative likelihoods of the 
+#' models, based on each criterion are also returned.
+#' 
+#' @examples
+#' # get example data:
+#' data("tworatedata")
+#' 
+#' # first we baseline it, and get a median for every trial:
+#' baseline <- function(reachvector,blidx) reachvector - mean(reachvector[blidx], na.rm=TRUE)
+#' tworatedata[,4:ncol(tworatedata)] <- apply(tworatedata[,4:ncol(tworatedata)], FUN=baseline, MARGIN=c(2), blidx=c(17:32))
+#' reaches <- apply(tworatedata[4:ncol(tworatedata)], FUN=median, MARGIN=c(1), na.rm=TRUE)
+#' 
+#' # and we extract the schedule:
+#' schedule <- tworatedata$schedule
+#' 
+#' # now we can fit the model to the reaches, given the schedule:
+#' par <- twoRateFit(schedule, reaches)
+#' MSE2 <- twoRateMSE(par, schedule, reaches)
+#' 
+#' # we do the same for the one-rate model:
+#' par <- oneRateFit(schedule, reaches)
+#' MSE1 <- oneRateMSE(par, schedule, reaches)
+#' 
+#' modelCriteriaMSE(MSE=c('one-rate'=MSE1, 'two-rate'=MSE2), k=c(2,4), N=6)
+#' 
+#' @export
+modelCriteriaMSE <- function(MSE, k, N) {
+  
+  # MSE : our goodness of fit measure in lieu of actual likelihood
+  # k   : number of parameters
+  # N   : number of independent observations
+
+  if (length(MSE) != length(k)) {
+    stop('Arguments MSE and k need to be of the same length.\n')
+  }
+  if (any(c(length(MSE), length(k), length(N)) < 1)) {
+    stop('All arguments must be at least of length 1.\n')
+  }
+  if (length(N) > 1) {
+    stop('N has to be a single numeric value.\n')
+  }
+  
+  # AIC 
+  
+  # previous calculation:
+  # C <- N*(log(2*pi)+1) # what is this for?
+  # AIC <- (2 * k) + N*log(MSE) + C
+  
+  AIC <- (N * log(MSE)) + (2 * k)
+  
+  # correction for low N (compared to k):
+  
+  AICc <- AIC + ( (2 * k^2) / (N - k - 1) )
+  
+  # BIC
+  
+  BIC <- log(N)*k - (2 * log(MSE))
+  
+  # Hannan-Quin
+  
+  HQC <- (-2 * MSE) + (2 * k * log(log(N)))
+  
+  if (length(MSE) == 1) {
+    
+    return(data.frame('AIC'=AIC, 'AICc'=AICc, 'BIC'=BIC, 'HQC'=HQC))
+    
+  } else {
+    
+    AIC.rl <- exp((min(AIC)-AIC)/2)
+    AICc.rl <- exp((min(AICc)-AICc)/2)
+    BIC.rl <- exp((min(BIC)-BIC)/2)
+    HQC.rl <- exp((min(HQC)-HQC)/2)
+    
+    return(data.frame('AIC'=AIC,'AIC.rl'=AIC.rl, 'AICc'=AICc, 'AICc.rl'=AICc.rl, 'BIC'=BIC, 'BIC.rl'=BIC.rl, 'HQC'=HQC, 'HQC.rl'=HQC.rl))
+    
+  }
   
 }
