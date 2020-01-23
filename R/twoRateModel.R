@@ -566,7 +566,7 @@ seriesEffectiveSampleSize <- function(series, method='ac_one') {
   
 }
 
-#' @title Calculate several model evaluation criteria.
+#' @title Calculate model evaluation criteria (mainly AIC).
 #' @param MSE numeric: The mean squared error between the model and data. This
 #' can be a vector if multiple models are to be evaluated. If this vector has
 #' named entries, they will be used as row names in the returned data frame.
@@ -574,23 +574,24 @@ seriesEffectiveSampleSize <- function(series, method='ac_one') {
 #' k needs to be a vector of the same length.
 #' @param N numeric: the number of independent observations (see the function:
 #' `seriesEffectiveSampleSize` for some options. (Not a vector.)
+#' @param n numeric: the number of observation. For a two-rate model this would
+#' be the number of trials in the sequence. Necessary for calculating AICc, but
+#' can be left NA to skip AICc.
 #' @return data frame with values for several model evaluation criteria
 #' @description This function is part of a set of functions to fit and 
 #' evaluate the two-rate model of motor learning.
 #' @details
-#' This function allows estimating model criteria based on the MSE. This is
+#' This function allows estimating model criteria based on the RMSE. This is
 #' useful for models where no method exists to extract the log-likelihood. When
 #' log-likelihood can be used, see `AIC`, `logLik` and `nobs` from {stats}.
 #' 
-#' The function calculates four model evaluation criteria:
+#' If possible fit models by maximizing their likelihood.
+#' 
+#' The function calculates two model evaluation criteria:
 #' 
 #' "AIC": Akaike's Information Criterion
 #' 
 #' "AICc": The AIC, but with a correction for small sample sizes.
-#' 
-#' "BIC": The Bayesian Information Criterion
-#' 
-#' "HQC": The Hannan-Quinn criterion
 #' 
 #' If there are 2 or more models evaluated, the relative likelihoods of the 
 #' models, based on each criterion are also returned.
@@ -615,14 +616,17 @@ seriesEffectiveSampleSize <- function(series, method='ac_one') {
 #' par <- oneRateFit(schedule, reaches)
 #' MSE1 <- oneRateMSE(par, schedule, reaches)
 #' 
-#' modelCriteriaMSE(MSE=c('one-rate'=MSE1, 'two-rate'=MSE2), k=c(2,4), N=6)
+#' # effective N was calculated with "seriesEffectiveSampleSize" as: 6.833
+#' 
+#' modelCriteriaMSE(MSE=c('one-rate'=MSE1, 'two-rate'=MSE2), k=c(2,4), N=6.833, n=164)
 #' 
 #' @export
-modelCriteriaMSE <- function(MSE, k, N) {
+modelCriteriaMSE <- function(MSE, k, N, n=NA) {
   
   # MSE : our goodness of fit measure in lieu of actual likelihood
   # k   : number of parameters
   # N   : number of independent observations
+  # n   : number of observations (number of trials for two-rate models)
 
   if (length(MSE) != length(k)) {
     stop('Arguments MSE and k need to be of the same length.\n')
@@ -630,43 +634,102 @@ modelCriteriaMSE <- function(MSE, k, N) {
   if (any(c(length(MSE), length(k), length(N)) < 1)) {
     stop('All arguments must be at least of length 1.\n')
   }
-  if (length(N) > 1) {
+  if (!is.numeric(MSE) | !is.numeric(k)) {
+    stop('MSE and k need to be numeric.\n')
+  }
+  if (length(N) > 1 | !is.numeric(N)) {
     stop('N has to be a single numeric value.\n')
   }
+  if (!is.na(n) && (length(n) > 1 | !is.numeric(n))) {
+    stop('n has to be NA, or a single numeric value.\n')
+  }
   
-  # AIC 
+  # maximum likelihood:
+  # L <- (-(n/2) * log(2*pi)) - ((n/2)*log(MSE)) - (1/(2*MSE)*(MSE*n))
+  # but this sometimes results in negative likelihoods
+  # the log_e of which causes problems later on 
   
-  # previous calculation:
+  # n <- N
+  
+  # without the "constant" that Wikipedia mentions:
+  # this is simpler, and I might replace the constant
+  # L <- -(n/2) * log(MSE)
+  
+  # sometimes we now get inf or nan output, 
+  # so we replace the constant to avoid this:
+  # if (any(L < 1)) {
+  #   L <- (L - min(L)) + 1
+  # }
+  
+  #-- AIC --# 
+  
+  # Thomas calculation:
   # C <- N*(log(2*pi)+1) # what is this for? a penalty for large number of observations?
   # AIC <- (2 * k) + N*log(MSE) + C
   
   AIC <- (N * log(MSE)) + (2 * k)
+  # AIC <- (2 * k) - (N * log(L))
   
-  # correction for low N (compared to k):
+  #-- AICc --#
   
-  AICc <- AIC + ( (2 * k^2) / (N - k - 1) )
+  if (!is.na(n)) {
+    # correction for low N (compared to k):
+    AICc <- AIC + ( (2 * k^2) / (n - k - 1) )
+  }
   
-  # BIC
+  #-- BIC --#
   
-  BIC <- log(N)*k - (2 * log(MSE))
+  #BIC <- log(N)*k - (2 * log(L))
   
-  # Hannan-Quin
+  #-- Hannan-Quinn --#
   
-  HQC <- (-2 * MSE) + (2 * k * log(log(N)))
+  #HQC <- (-2 * L) + (2 * k * log(log(N)))
   
   if (length(MSE) == 1) {
     
-    return(data.frame('AIC'=AIC, 'AICc'=AICc, 'BIC'=BIC, 'HQC'=HQC))
+    # return(data.frame('AIC'=AIC, 'AICc'=AICc, 'BIC'=BIC, 'HQC'=HQC))
+    if (is.na(n)) {
+      return(data.frame('AIC'=AIC))
+    } else {
+      return(data.frame('AIC'=AIC, 'AICc'=AICc))
+    }
     
   } else {
     
-    AIC.rl <- exp((min(AIC)-AIC)/2)
-    AICc.rl <- exp((min(AICc)-AICc)/2)
-    BIC.rl <- exp((min(BIC)-BIC)/2)
-    HQC.rl <- exp((min(HQC)-HQC)/2)
+    AIC.rl  <- relativeLikelihood( AIC  ) # exp( ( min( AIC  ) - AIC  ) / 2 )
     
-    return(data.frame('AIC'=AIC,'AIC.rl'=AIC.rl, 'AICc'=AICc, 'AICc.rl'=AICc.rl, 'BIC'=BIC, 'BIC.rl'=BIC.rl, 'HQC'=HQC, 'HQC.rl'=HQC.rl))
+    if (is.na(n)) {
+      return(data.frame('AIC'=AIC,'AIC.rl'=AIC.rl))
+    } else {
+      AICc.rl <- relativeLikelihood( AICc )
+      return(data.frame('AIC'=AIC,'AIC.rl'=AIC.rl, 'AICc'=AICc, 'AICc.rl'=AICc.rl))
+    }
+    # BIC.rl  <- relativeLikelihood( BIC  )
+    # HQC.rl  <- relativeLikelihood( HQC  )
+    
+    # return(data.frame('AIC'=AIC,'AIC.rl'=AIC.rl, 'AICc'=AICc, 'AICc.rl'=AICc.rl, 'BIC'=BIC, 'BIC.rl'=BIC.rl, 'HQC'=HQC, 'HQC.rl'=HQC.rl))
     
   }
+  
+}
+
+#' @title Calculate relative likelihood of models based on information criteria
+#' @param crit a numeric vector with the same informations criterion, for
+#' several models (fit on the same data).
+#' @return Returns the relative likelihoods of the models
+#' @description This function is part of a set of functions to fit and 
+#' evaluate the two-rate model of motor learning.
+#' @details
+#' This function returns the relative likelihood of a series of models based on
+#' their scores on an information criterion (e.g. AIC or BIC). The best model 
+#' will have a relative likelihood of 1, and models that have relative 
+#' likelihoods between 1 and 0.05 are also good, while those below 0.05 can be 
+#' considered worse than the best model.
+#' @examples
+#' ?
+#' @export
+relativeLikelihood <- function(crit) {
+  
+  return( exp( ( min( crit  ) - crit  ) / 2 ) )
   
 }

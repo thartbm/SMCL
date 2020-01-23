@@ -2,9 +2,9 @@
 % Please edit documentation in R/twoRateModel.R
 \name{modelCriteriaMSE}
 \alias{modelCriteriaMSE}
-\title{Calculate several model evaluation criteria.}
+\title{Calculate model evaluation criteria (mainly AIC).}
 \usage{
-modelCriteriaMSE(MSE, k, N)
+modelCriteriaMSE(MSE, k, N, n = NA)
 }
 \arguments{
 \item{MSE}{numeric: The mean squared error between the model and data. This
@@ -16,6 +16,10 @@ k needs to be a vector of the same length.}
 
 \item{N}{numeric: the number of independent observations (see the function:
 `seriesEffectiveSampleSize` for some options. (Not a vector.)}
+
+\item{n}{numeric: the number of observation. For a two-rate model this would
+be the number of trials in the sequence. Necessary for calculating AICc, but
+can be left NA to skip AICc.}
 }
 \value{
 data frame with values for several model evaluation criteria
@@ -25,19 +29,17 @@ This function is part of a set of functions to fit and
 evaluate the two-rate model of motor learning.
 }
 \details{
-This function allows estimating model criteria based on the MSE. This is
+This function allows estimating model criteria based on the RMSE. This is
 useful for models where no method exists to extract the log-likelihood. When
 log-likelihood can be used, see `AIC`, `logLik` and `nobs` from {stats}.
 
-The function calculates four model evaluation criteria:
+If possible fit models by maximizing their likelihood.
+
+The function calculates two model evaluation criteria:
 
 "AIC": Akaike's Information Criterion
 
 "AICc": The AIC, but with a correction for small sample sizes.
-
-"BIC": The Bayesian Information Criterion
-
-"HQC": The Hannan-Quinn criterion
 
 If there are 2 or more models evaluated, the relative likelihoods of the 
 models, based on each criterion are also returned.
@@ -62,6 +64,8 @@ MSE2 <- twoRateMSE(par, schedule, reaches)
 par <- oneRateFit(schedule, reaches)
 MSE1 <- oneRateMSE(par, schedule, reaches)
 
-modelCriteriaMSE(MSE=c('one-rate'=MSE1, 'two-rate'=MSE2), k=c(2,4), N=6)
+# effective N was calculated with "seriesEffectiveSampleSize" as: 6.833
+
+modelCriteriaMSE(MSE=c('one-rate'=MSE1, 'two-rate'=MSE2), k=c(2,4), N=6.833, n=164)
 
 }
