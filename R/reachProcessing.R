@@ -314,11 +314,15 @@ getReachAngleAt <- function(trialdf, location='pr0.33333', posunit='pix', timeun
 #' @examples
 #' ?
 #' @export
-trimReach <- function(trialdf, homeStart=NA, targetReached=NA, velocity=0.05, firstMove=FALSE, untilHold=NA, device='hand', posunit='pix', timeunit='ms', homepos=c(0,0)) {
+trimReach <- function(trialdf, homeStart=NA, targetReached=NA, velocity=0.05, firstMove=FALSE, holdHome=NA, untilHold=NA, device='hand', posunit='pix', timeunit='ms', homepos=c(0,0)) {
   
   targetposition <- as.numeric( trialdf[ 1, c( sprintf('targetx_%s', posunit ), sprintf( 'targety_%s', posunit ) ) ] )
   targetposition <- targetposition - homepos
   targetdistance <- sqrt( sum( targetposition^2 ) )
+  
+  nsamples <- dim(trialdf)[1]
+  #cat(sprintf('** start with %d samples\n',nsamples))
+  # cat('-----\n')
   
   if (!is.na(homeStart)) {
     
@@ -333,11 +337,11 @@ trimReach <- function(trialdf, homeStart=NA, targetReached=NA, velocity=0.05, fi
     if (is.character((homeStart))) {
       
       # cutoff at a percentage from home to target in whatever unit is used
-      if (substring(location,1,2) == 'pr') {
+      if (substring(homeStart,1,2) == 'pr') {
         
-        cutoff <- as.numeric(substring(location, 3))
+        cutoff <- as.numeric(substring(homeStart, 3))
         cutoff <- cutoff * targetdistance
-
+        
       }
       
     }
@@ -347,13 +351,20 @@ trimReach <- function(trialdf, homeStart=NA, targetReached=NA, velocity=0.05, fi
     
     if (devicedist[1] > cutoff) {
       
+      # cat('first sample too far from home\n')
+      
       # find the first sample, where device is closer to home than the cutoff:
       if (any(devicedist < cutoff)) {
-        rown <- max(1, min(which(devicedist < cutoff)) - 1)
-        trialdf <- trialdf[c(rown,dim(trialdf)[1]),]
+        rown <- max(1, min(which(devicedist < cutoff))-1) # why the minus one?
+        trialdf <- trialdf[c(rown:dim(trialdf)[1]),]
       }
       
     }
+    
+    # if (dim(trialdf)[1]<nsamples) {
+    #   newsamples <- dim(trialdf)[1]
+    #   cat(sprintf('homeStart cuts %d samples\n', nsamples-newsamples))
+    # }
     
   }
   
@@ -376,7 +387,31 @@ trimReach <- function(trialdf, homeStart=NA, targetReached=NA, velocity=0.05, fi
     
   }
   
-  if (!is.na(untilHold) && is.list(untilHold) && (length(untilHold) == 3)) {
+  if (!is.na(holdHome) && is.list(holdHome) && (length(holdHome) == 2)) {
+    epoch <- holdHome$epoch
+    distance <- holdHome$distance
+    
+    # first we get the necessary variables from the data frame:
+    x <- trialdf[,sprintf('%sx_%s',device,posunit)] - homepos[1]
+    y <- trialdf[,sprintf('%sy_%s',device,posunit)] - homepos[2]
+    sample_time <- trialdf[,sprintf('time_%s',timeunit)]
+    
+    # only look within distance:
+    didx <- which(sqrt(x^2 + y^2) < distance)
+    
+    for (sample.idx in didx) {
+      tidx <- which((sample_time[c(1:sample.idx)]-sample_time[sample.idx]) > (-epoch))
+      
+      if (all(sqrt(x[tidx]^2 + y[tidx]^2) < distance)) {
+        # the trial now includes the hold period:
+        trialdf <- trialdf[c(min(tidx):dim(trialdf)[1]),]
+        break() # break out of the for-loop
+      }
+    }
+    
+  }
+  
+  if (!is.na(untilHold) && is.list(untilHold) && (length(untilHold) == 4)) {
     
     # here we use sample-to-sample velocity as used during the experiment
     # (so no smoothed / splined trajectory)
@@ -389,10 +424,10 @@ trimReach <- function(trialdf, homeStart=NA, targetReached=NA, velocity=0.05, fi
     if (untilHold$kind == 'sample-velocity') {
       # calculate instantaneous velocity:
       velocity <- c(0,sqrt(diff(x)^2 + diff(y)^2) / diff(sample_time))
-    
+      print(velocity)
       # which samples are below the velocity criterion:
       belowcriterion <- which(velocity < untilHold$threshold)
-     
+      
       # this might be helpful for non-averaged hold criterion algorithms:
       bc_runs <- rle(belowcriterion) # no idea how to continue...
       
@@ -403,14 +438,17 @@ trimReach <- function(trialdf, homeStart=NA, targetReached=NA, velocity=0.05, fi
     
     if (untilHold$kind == 'epoch-distance') {
       
+      # only look beyond mindist:
       didx <- which(sqrt(x^2 + y^2) > untilHold$mindist)
       
       for (sample.idx in didx) {
-        tidx <- which((sample_time[c(1:sample.idx)]-sample_time[sample_idx]) > (-untilHold$epoch))
-        if (sum(sqrt(x[tidx]^2 + y[tidx]^2)) < untilHold$threshold) {
-          trialdf <- trialdf[c(1:tidx),]
+        tidx <- which((sample_time[c(1:sample.idx)]-sample_time[sample.idx]) > (-untilHold$epoch))
+        # print(sum(sqrt(diff(x[tidx])^2 + diff(y[tidx])^2)))
+        if (sum(sqrt(diff(x[tidx])^2 + diff(y[tidx])^2)) < untilHold$threshold) {
+          # the trial now includes the hold period:
+          trialdf <- trialdf[c(1:max(tidx)),]
           break() # break out of the for-loop
-        } # if this never happens: don't trim the reach
+        }
       }
       
     }
