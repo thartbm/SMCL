@@ -16,7 +16,7 @@
 #' nor does this function differentiate between single-sided or two-sided 
 #' t-tests.
 #' @examples
-#' show example?
+#' 
 #' @export
 etaSquaredTtest <- function(g1,g2=NA,mu=0,na.rm=TRUE) {
   
