@@ -4,7 +4,7 @@
 \alias{modelCriteriaMSE}
 \title{Calculate model evaluation criteria (mainly AIC).}
 \usage{
-modelCriteriaMSE(MSE, k, N, n = NA)
+modelCriteriaMSE(MSE, k, N, n = NA, MSEmean)
 }
 \arguments{
 \item{MSE}{numeric: The mean squared error between the model and data. This
@@ -64,8 +64,10 @@ MSE2 <- twoRateMSE(par, schedule, reaches)
 par <- oneRateFit(schedule, reaches)
 MSE1 <- oneRateMSE(par, schedule, reaches)
 
+MSEmean <- mean((schedule-mean(reaches))^2)
+
 # effective N was calculated with "seriesEffectiveSampleSize" as: 6.833
 
-modelCriteriaMSE(MSE=c('one-rate'=MSE1, 'two-rate'=MSE2), k=c(2,4), N=6.833, n=164)
+modelCriteriaMSE(MSE=c('one-rate'=MSE1, 'two-rate'=MSE2), k=c(2,4), N=6.833, n=164, MSEmean=MSEmean)
 
 }
