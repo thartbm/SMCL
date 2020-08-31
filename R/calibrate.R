@@ -87,7 +87,7 @@ calibrationPolynomial <- function(P,Mcoords) {
 #' No need to understand or use this
 #' @details Not yet.
 #' @examples
-#' Not yet.
+#' 
 #' @export
 coordW <- function(Mcoords,Tcoords) {
   

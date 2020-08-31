@@ -130,7 +130,7 @@ twoRateMSE <- function(par, schedule, reaches) {
 #' 
 #' # and plot that:
 #' model <- twoRateModel(par=par, schedule=schedule)
-#' plot(reaches,type='l',col='#333333',xlab='trial',ylab='reach deviation [deg]',xlim=c(0,165),ylim=c(-35,35),bty='n',ax=F)
+#' plot(reaches,type='l',col='#333333',xlab='trial',ylab='reach deviation [deg]',xlim=c(0,165),ylim=c(-35,35),bty='n',ax=FALSE)
 #' lines(c(1,33,33,133,133,145,145),c(0,0,30,30,-30,-30,0),col='#AAAAAA')
 #' lines(c(145,164),c(0,0),col='#AAAAAA',lty=2)
 #' lines(model$slow,col='blue')
@@ -308,7 +308,7 @@ oneRateMSE <- function(par, schedule, reaches) {
 #' 
 #' # and plot that:
 #' model <- oneRateModel(par=par, schedule=schedule)
-#' plot(reaches,type='l',col='#333333',xlab='trial',ylab='reach deviation [deg]',xlim=c(0,165),ylim=c(-35,35),bty='n',ax=F)
+#' plot(reaches,type='l',col='#333333',xlab='trial',ylab='reach deviation [deg]',xlim=c(0,165),ylim=c(-35,35),bty='n',ax=FALSE)
 #' lines(c(1,33,33,133,133,145,145),c(0,0,30,30,-30,-30,0),col='#AAAAAA')
 #' lines(c(145,164),c(0,0),col='#AAAAAA',lty=2)
 #' lines(model$process,col='purple')
@@ -552,9 +552,10 @@ seriesEffectiveSampleSize <- function(series, method='ac_one') {
       critlag <- critlag + 1
       
       # lag can only go up to a certain value, determined by the length of the sequence
+      # make sure there are at least 3 data points for acf...
       if (critlag > (length(series) - 2)) {
         
-        return( length(series) ) # or length(reaches) - 1?
+        return( 1 ) # or length(series) - 1?
         
       }
       
@@ -616,12 +617,14 @@ seriesEffectiveSampleSize <- function(series, method='ac_one') {
 #' par <- oneRateFit(schedule, reaches)
 #' MSE1 <- oneRateMSE(par, schedule, reaches)
 #' 
+#' MSEmean <- mean((schedule-mean(reaches))^2)
+#' 
 #' # effective N was calculated with "seriesEffectiveSampleSize" as: 6.833
 #' 
-#' modelCriteriaMSE(MSE=c('one-rate'=MSE1, 'two-rate'=MSE2), k=c(2,4), N=6.833, n=164)
+#' modelCriteriaMSE(MSE=c('one-rate'=MSE1, 'two-rate'=MSE2), k=c(2,4), N=6.833, n=164, MSEmean=MSEmean)
 #' 
 #' @export
-modelCriteriaMSE <- function(MSE, k, N, n=NA) {
+modelCriteriaMSE <- function(MSE, k, N, n=NA, MSEmean) {
   
   # MSE : our goodness of fit measure in lieu of actual likelihood
   # k   : number of parameters
@@ -733,3 +736,107 @@ relativeLikelihood <- function(crit) {
   return( exp( ( min( crit  ) - crit  ) / 2 ) )
   
 }
+
+modelCriteriaLikelihood <- function(MSE, k, N, n=NA, MSEmean=NA) {
+  
+  # MSE : our goodness of fit measure in lieu of actual likelihood
+  # k   : number of parameters
+  # N   : number of independent observations
+  # n   : number of observations (number of trials for two-rate models)
+  
+  if (length(MSE) != length(k)) {
+    stop('Arguments MSE and k need to be of the same length.\n')
+  }
+  if (any(c(length(MSE), length(k), length(N)) < 1)) {
+    stop('All arguments must be at least of length 1.\n')
+  }
+  if (!is.numeric(MSE) | !is.numeric(k)) {
+    stop('MSE and k need to be numeric.\n')
+  }
+  if (length(N) > 1 | !is.numeric(N)) {
+    stop('N has to be a single numeric value.\n')
+  }
+  if (!is.na(n) && (length(n) > 1 | !is.numeric(n))) {
+    stop('n has to be NA, or a single numeric value.\n')
+  }
+  
+  # maximum likelihood:
+  # L <- (-(n/2) * log(2*pi)) - ((n/2)*log(MSE)) - (1/(2*MSE)*(MSE*n))
+  # but this sometimes results in negative likelihoods
+  # the log_e of which causes problems later on 
+  
+  # n <- N
+  
+  # without the "constant" that Wikipedia mentions:
+  # this is simpler, and I might replace the constant
+  # print(-(N/2))
+  # print(MSE)
+  # print(log(MSE))
+  
+  
+  
+  L <- -(N/2) * log(MSE) # wikipedia
+  #print(L)
+  
+  # sometimes we now get inf or nan output, 
+  # so we replace the constant to avoid this:
+  # if (any(L < 1)) {
+  #   L <- (L - min(L)) + 1
+  # }
+  
+  # R2 <- 1 - (MSE/MSEmean)
+  # print(R2)
+  # L <- R2
+  
+  #-- AIC --# 
+  
+  # Thomas calculation:
+  # C <- N*(log(2*pi)+1) # what is this for? a penalty for large number of observations?
+  # AIC <- (2 * k) + N*log(MSE) + C
+  
+  # AIC <- (N * log(MSE)) + (2 * k) # MSE based
+  AIC <- (2 * k) - (N * log(L)) # L based?
+  
+  #-- AICc --#
+  
+  if (!is.na(n)) {
+    # correction for low N (compared to k):
+    AICc <- AIC + ( (2 * k^2) / (n - k - 1) )
+  }
+  
+  #-- BIC --#
+  
+  BIC <- log(N)*k - (2 * log(L)) # L based
+  
+  #-- Hannan-Quinn --#
+  
+  HQC <- (-2 * L) + (2 * k * log(log(N))) # L based
+  
+  if (length(MSE) == 1) {
+    
+    # return(data.frame('AIC'=AIC, 'AICc'=AICc, 'BIC'=BIC, 'HQC'=HQC))
+    if (is.na(n)) {
+      return(data.frame('AIC'=AIC))
+    } else {
+      return(data.frame('AIC'=AIC, 'AICc'=AICc))
+    }
+    
+  } else {
+    
+    AIC.rl  <- relativeLikelihood( AIC  ) # exp( ( min( AIC  ) - AIC  ) / 2 )
+    BIC.rl  <- relativeLikelihood( BIC  )
+    HQC.rl  <- relativeLikelihood( HQC  )
+    
+    if (is.na(n)) {
+      return(data.frame('AIC'=AIC,'AIC.rl'=AIC.rl, 'BIC'=BIC, 'BIC.rl'=BIC.rl, 'HQC'=HQC, 'HQC.rl'=HQC.rl))
+    } else {
+      AICc.rl <- relativeLikelihood( AICc )
+      return(data.frame('AIC'=AIC,'AIC.rl'=AIC.rl, 'AICc'=AICc, 'AICc.rl'=AICc.rl, 'BIC'=BIC, 'BIC.rl'=BIC.rl, 'HQC'=HQC, 'HQC.rl'=HQC.rl))
+    }
+
+    # return(data.frame('AIC'=AIC,'AIC.rl'=AIC.rl, 'AICc'=AICc, 'AICc.rl'=AICc.rl, 'BIC'=BIC, 'BIC.rl'=BIC.rl, 'HQC'=HQC, 'HQC.rl'=HQC.rl))
+    
+  }
+  
+}
+

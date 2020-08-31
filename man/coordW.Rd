@@ -22,5 +22,5 @@ No need to understand or use this
 Not yet.
 }
 \examples{
-Not yet.
+
 }

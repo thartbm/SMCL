@@ -32,5 +32,5 @@ nor does this function differentiate between single-sided or two-sided
 t-tests.
 }
 \examples{
-show example?
+
 }

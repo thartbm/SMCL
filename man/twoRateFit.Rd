@@ -43,7 +43,7 @@ par = twoRateFit(schedule, reaches)
 
 # and plot that:
 model <- twoRateModel(par=par, schedule=schedule)
-plot(reaches,type='l',col='#333333',xlab='trial',ylab='reach deviation [deg]',xlim=c(0,165),ylim=c(-35,35),bty='n',ax=F)
+plot(reaches,type='l',col='#333333',xlab='trial',ylab='reach deviation [deg]',xlim=c(0,165),ylim=c(-35,35),bty='n',ax=FALSE)
 lines(c(1,33,33,133,133,145,145),c(0,0,30,30,-30,-30,0),col='#AAAAAA')
 lines(c(145,164),c(0,0),col='#AAAAAA',lty=2)
 lines(model$slow,col='blue')

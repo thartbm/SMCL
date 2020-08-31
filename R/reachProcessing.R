@@ -67,7 +67,7 @@ getSplinedVelocity <- function(x, y, t, spar=0.01) {
 #' @description Rotate a trajectory of X,Y coordinates.
 #' @details Not yet.
 #' @examples
-#' Not yet.
+#' 
 #' @export
 rotateCoordinates <- function(df,angle,origin=c(0,0)) {
   
