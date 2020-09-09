@@ -8,16 +8,13 @@ generateRandomIDs(checkFile = "randomIDs.csv", IDlength = 3,
   number = 100, addToFile = checkFile)
 }
 \arguments{
-\item{checkFile}{CSV ile with previous IDs that should not be duplicated}
+\item{checkFile}{CSV file with previous IDs that should not be duplicated}
 
 \item{IDlength}{Number character pairs to use for IDs (3 is 6 characters)}
 
 \item{number}{How many IDs to add to the existing list.}
 
 \item{addToFile}{What CSV file to write the IDs to.}
-}
-\value{
-nothing
 }
 \description{
 This function generates a set of random IDs for use in 

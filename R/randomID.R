@@ -2,11 +2,11 @@
 
 
 #' @title Generate random participant IDs
-#' @param checkFile CSV ile with previous IDs that should not be duplicated
+#' @param checkFile CSV file with previous IDs that should not be duplicated
 #' @param IDlength Number character pairs to use for IDs (3 is 6 characters)
 #' @param number How many IDs to add to the existing list.
 #' @param addToFile What CSV file to write the IDs to.
-#' @return nothing
+#' @return NULL
 #' @description This function generates a set of random IDs for use in 
 #' experiments where participant anonymity is important. The IDs are not
 #' generated with R's random number generator, but uses openssl.
