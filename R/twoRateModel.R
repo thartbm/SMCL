@@ -103,6 +103,8 @@ twoRateMSE <- function(par, schedule, reaches) {
 #' @title Fit the two-rate model to reach deviations.
 #' @param schedule A vector of length N with the perturbation schedule.
 #' @param reaches A vector of length N with reach deviation data.
+#' @param gridpoints Number of values used for each parameters in a gridfit.
+#' @param gridfits Number of best gridfits to use in MSE fit.
 #' @return A named numeric vector with the optimal parameters that fit the two
 #' rate model to the data as best as possible, with these elements:
 #' - Ls: the slow learning rate
@@ -181,7 +183,7 @@ twoRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6) {
     allfits <- do.call("rbind",
                        apply( searchgrid[order(MSE)[1:gridfits],],
                               MARGIN=c(1),
-                              FUN=optim,
+                              FUN=stats::optim,
                               fn=twoRateMSE,
                               method='Nelder-Mead',
                               schedule=schedule,
@@ -283,6 +285,8 @@ oneRateMSE <- function(par, schedule, reaches) {
 #' @title Fit the one-rate model to reach deviations.
 #' @param schedule A vector of length N with the perturbation schedule.
 #' @param reaches A vector of length N with reach deviation data.
+#' @param gridpoints Number of values used for each parameters in a gridfit.
+#' @param gridfits Number of best gridfits to use in MSE fit.
 #' @return A named numeric vector with the optimal parameters that fit the two
 #' rate model to the data as best as possible, with these elements:
 #' - L: the learning rate
@@ -355,7 +359,7 @@ oneRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6) {
     allfits <- do.call("rbind",
                        apply( searchgrid[order(MSE)[1:gridfits],],
                               MARGIN=c(1),
-                              FUN=optim,
+                              FUN=stats::optim,
                               fn=oneRateMSE,
                               method='Nelder-Mead',
                               schedule=schedule,
@@ -498,7 +502,7 @@ seriesEffectiveSampleSize <- function(series, method='ac_one') {
     
   } else if (method == 'ac_lag.10') {
   
-    critlag <- which(acf(series, lag.max=length(series)-1, plot=FALSE)$acf < 0.1)
+    critlag <- which(stats::acf(series, lag.max=length(series)-1, plot=FALSE)$acf < 0.1)
     
     if (length(critlag) == 0) {
       
@@ -531,17 +535,17 @@ seriesEffectiveSampleSize <- function(series, method='ac_one') {
       point_one <- series[c(1:lagpoints)]
       point_two <- series[c((critlag+1):length(series))]
       
-      lag_cor <- cor(point_one, point_two)
+      lag_cor <- stats::cor(point_one, point_two)
       
       shuffle_cor <- rep(NA, 1000)
       
       for (bootstrap in c(1:1000)) {
         
-        shuffle_cor[bootstrap] <- cor(point_one, sample(point_two))
+        shuffle_cor[bootstrap] <- stats::cor(point_one, sample(point_two))
         
       }
       
-      upperlimit <- quantile(shuffle_cor, probs=0.95)
+      upperlimit <- stats::quantile(shuffle_cor, probs=0.95)
       
       if (lag_cor < upperlimit) {
         

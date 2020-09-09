@@ -10,6 +10,10 @@ oneRateFit(schedule, reaches, gridpoints = 6, gridfits = 6)
 \item{schedule}{A vector of length N with the perturbation schedule.}
 
 \item{reaches}{A vector of length N with reach deviation data.}
+
+\item{gridpoints}{Number of values used for each parameters in a gridfit.}
+
+\item{gridfits}{Number of best gridfits to use in MSE fit.}
 }
 \value{
 A named numeric vector with the optimal parameters that fit the two

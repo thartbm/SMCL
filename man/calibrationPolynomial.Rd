@@ -21,7 +21,7 @@ Not yet.
 Not yet.
 }
 \examples{
-data("localization")
+data("localization_aligned")
 str(localization_aligned)
 
 # let's see if we can convert the touch screen pixels to (centi)meters

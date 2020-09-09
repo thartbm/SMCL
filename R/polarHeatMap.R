@@ -70,8 +70,8 @@ polarHeatMap <- function(x,y,z,mincol=c(0.94,0.98,0.99),maxcol=c(0.06,0.82,0.88)
   
     plot.new() # is this allowed... yes, but then everything else has to be manually added?
     
-    plot.window(xlim = xlim, ylim = ylim, asp = 1)
-    title(main = main)
+    graphics::plot.window(xlim = xlim, ylim = ylim, asp = 1)
+    graphics::title(main = main)
     
   }
   # use `rgb()`
@@ -110,18 +110,18 @@ polarHeatMap <- function(x,y,z,mincol=c(0.94,0.98,0.99),maxcol=c(0.06,0.82,0.88)
         xs <- seq(x1,x2,length.out=ceiling(abs(diff(c(x1,x2)))/resolution))
         X <- (c(cos(xs)*y1, rev(cos(xs)*y2)) * scale) + origin[1]
         Y <- (c(sin(xs)*y1, rev(sin(xs)*y2)) * scale) + origin[2]
-        allPolygons[[length(allPolygons)+1]] <- list('x'=X, 'y'=Y, 'col'=rgb(R[xi,yi],G[xi,yi],B[xi,yi],alpha=alpha))
+        allPolygons[[length(allPolygons)+1]] <- list('x'=X, 'y'=Y, 'col'=grDevices::rgb(R[xi,yi],G[xi,yi],B[xi,yi],alpha=alpha))
       }
     }
   }
   
   for (p in allPolygons) {
-    polygon(x=p$x, y=p$y, col=p$col, border=NA)
+    graphics::polygon(x=p$x, y=p$y, col=p$col, border=NA)
   }
   
   if (!is.na(border)) {
     for (p in allPolygons) {
-      polygon(x=p$x, y=p$y, col=NA, border=bordercol, lwd=border)
+      graphics::polygon(x=p$x, y=p$y, col=NA, border=bordercol, lwd=border)
     }
   }
   

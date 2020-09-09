@@ -12,7 +12,8 @@
   #' ?
   #' @examples
   #' 
-  #' data("localization")
+  #' data("localization_aligned")
+  #' data("localization_unaligned")
   #' 
   #' localization_aligned <- convert2cm(localization_aligned, from='r')
   #' localization_aligned <- convert2cm(localization_aligned, from='t')

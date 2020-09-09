@@ -11,7 +11,7 @@
 #' sometimes return warped.
 #' @details Not yet.
 #' @examples
-#' data("localization")
+#' data("localization_aligned")
 #' str(localization_aligned)
 #' 
 #' # let's see if we can convert the touch screen pixels to (centi)meters
@@ -43,7 +43,7 @@ calibrationParameters <- function(Mcoords,Tcoords) {
 #' @description Not yet.
 #' @details Not yet.
 #' @examples
-#' data("localization")
+#' data("localization_aligned")
 #' str(localization_aligned)
 #' 
 #' # let's see if we can convert the touch screen pixels to (centi)meters

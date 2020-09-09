@@ -1,14 +1,23 @@
 Package: SMCL
 Type: Package
 Title: Utilities for common tasks in the SensoriMotor Control Lab.
-Version: 0.0.0.9000
+Version: 2020.9.9
 Authors@R: c(person("Marius", "'t Hart", email = "thartbm@gmail.com",
                   role = c("aut", "cre")),
              person("Denise", "Henriques", email = "deniseh@yorku.ca", role = "aut"))
 Maintainer: Marius 't Hart <thartbm@gmail.com>
-Description: This package provides functions used to analyse reach
-    trajectory data used in the Sensorimotor Control Lab. 
+Description: This package provides some functions often used in the 
+  SensoriMotor Control Lab. 
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 RoxygenNote: 6.1.1
-Depends: R (>= 2.10)
+Depends:
+  R (>= 3.5)
+Imports:
+  stats,
+  graphics,
+  grDevices
+Suggests:
+  openssl (>= 1.4.1),
+  optimx  (>= 2018-7.10),
+  sn      (>= 1.5-4)
