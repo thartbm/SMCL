@@ -69,6 +69,7 @@ twoRateModel <- function(par, schedule) {
 #' @param schedule A numeric vector of length N with the perturbation schedule.
 #' @param reaches A numeric vector of length N with reach deviations matching
 #' the perturbation schedule.
+#' @param checkStability Only stable solutions will be permitted.
 #' @return A float: the mean squared error between the total model output and
 #' the reach deviations.
 #' @description This function is part of a set of functions to fit and 
@@ -82,7 +83,7 @@ twoRateModel <- function(par, schedule) {
 #' @examples
 #' ?
 #' @export
-twoRateMSE <- function(par, schedule, reaches) {
+twoRateMSE <- function(par, schedule, reaches, checkStability=FALSE) {
   
   bigError <- mean(schedule^2, na.rm=TRUE) * 10
   
@@ -92,6 +93,22 @@ twoRateMSE <- function(par, schedule, reaches) {
   }
   if (par['Rs'] < par['Rf']) {
     return(bigError)
+  }
+
+
+  if (checkStability) {
+    aa <- ((par['Rf'] - par['Lf']) * (par['Rs'] - par['Ls'])) - (par['Lf'] * par['Ls'])
+    if (aa <= 0) {
+      return(bigError)
+    }
+    
+    p <- par['Rf'] - par['Lf'] - par['Rs'] + par['Ls']
+    q <- p^2 + (4 * par['Lf'] * par['Ls'])
+    bb <- ((par['Rf'] - par['Lf'] + par['Rs'] - par['Ls'])  +  sqrt(q))
+    if (bb >= 2) {
+      return(bigError)
+    }
+    
   }
   
   return( mean((twoRateModel(par, schedule)$total - reaches)^2, na.rm=TRUE) )

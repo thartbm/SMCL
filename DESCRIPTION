@@ -1,7 +1,7 @@
 Package: SMCL
 Type: Package
 Title: Utilities for common tasks in the SensoriMotor Control Lab.
-Version: 2020.9.9
+Version: 2021.1.25
 Authors@R: c(person("Marius", "'t Hart", email = "thartbm@gmail.com",
                   role = c("aut", "cre")),
              person("Denise", "Henriques", email = "deniseh@yorku.ca", role = "aut"))

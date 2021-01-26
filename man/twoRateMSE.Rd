@@ -4,7 +4,7 @@
 \alias{twoRateMSE}
 \title{Get the MSE for how well the two-rate model fits reaches.}
 \usage{
-twoRateMSE(par, schedule, reaches)
+twoRateMSE(par, schedule, reaches, checkStability = FALSE)
 }
 \arguments{
 \item{par}{A named numeric vector with the four model parameters (see 
@@ -14,6 +14,8 @@ twoRateModel).}
 
 \item{reaches}{A numeric vector of length N with reach deviations matching
 the perturbation schedule.}
+
+\item{checkStability}{Only stable solutions will be permitted.}
 }
 \value{
 A float: the mean squared error between the total model output and
