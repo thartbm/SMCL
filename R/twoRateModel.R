@@ -122,6 +122,7 @@ twoRateMSE <- function(par, schedule, reaches, checkStability=FALSE) {
 #' @param reaches A vector of length N with reach deviation data.
 #' @param gridpoints Number of values used for each parameters in a gridfit.
 #' @param gridfits Number of best gridfits to use in MSE fit.
+#' @param checkStability Only stable solutions will be allowed.
 #' @return A named numeric vector with the optimal parameters that fit the two
 #' rate model to the data as best as possible, with these elements:
 #' - Ls: the slow learning rate
@@ -159,7 +160,7 @@ twoRateMSE <- function(par, schedule, reaches, checkStability=FALSE) {
 #' axis(2,c(-30,-15,0,15,30))
 #' 
 #' @export
-twoRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6) {
+twoRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6, checkStability=FALSE) {
   
   parvals <- seq(1/gridpoints/2,1-(1/gridpoints/2),1/gridpoints)
   
@@ -168,7 +169,7 @@ twoRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6) {
                             'Rs'=parvals,
                             'Rf'=parvals)
   # evaluate starting positions:
-  MSE <- apply(searchgrid, FUN=twoRateMSE, MARGIN=c(1), schedule=schedule, reaches=reaches)
+  MSE <- apply(searchgrid, FUN=twoRateMSE, MARGIN=c(1), schedule=schedule, reaches=reaches, checkStability=checkStability)
   
   optimxInstalled <- require("optimx")
   
@@ -184,7 +185,8 @@ twoRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6) {
                               lower=c(0,0,0,0),
                               upper=c(1,1,1,1),
                               schedule=schedule,
-                              reaches=reaches ) )
+                              reaches=reaches,
+                              checkStability=checkStability) )
     
     # pick the best fit:
     win <- allfits[order(allfits$value)[1],]
@@ -204,7 +206,8 @@ twoRateFit <- function(schedule, reaches, gridpoints=6, gridfits=6) {
                               fn=twoRateMSE,
                               method='Nelder-Mead',
                               schedule=schedule,
-                              reaches=reaches ) )
+                              reaches=reaches,
+                              checkStability=checkStability) )
     
     # pick the best fit:
     win <- allfits[order(unlist(data.frame(allfits)[,'value']))[1],]

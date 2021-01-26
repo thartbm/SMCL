@@ -4,7 +4,8 @@
 \alias{twoRateFit}
 \title{Fit the two-rate model to reach deviations.}
 \usage{
-twoRateFit(schedule, reaches, gridpoints = 6, gridfits = 6)
+twoRateFit(schedule, reaches, gridpoints = 6, gridfits = 6,
+  checkStability = FALSE)
 }
 \arguments{
 \item{schedule}{A vector of length N with the perturbation schedule.}
@@ -14,6 +15,8 @@ twoRateFit(schedule, reaches, gridpoints = 6, gridfits = 6)
 \item{gridpoints}{Number of values used for each parameters in a gridfit.}
 
 \item{gridfits}{Number of best gridfits to use in MSE fit.}
+
+\item{checkStability}{Only stable solutions will be allowed.}
 }
 \value{
 A named numeric vector with the optimal parameters that fit the two
