@@ -30,7 +30,9 @@
 #' getConfidenceInterval(exponential,method='bootstrap')
 #' 
 #' @export
-getConfidenceInterval <- function(data, variance = var(data), conf.level = 0.95, method='t-distr', resamples=1000, FUN=mean) {
+getConfidenceInterval <- function(data, variance = var(data, na.rm=TRUE), conf.level = 0.95, method='t-distr', resamples=1000, FUN=mean) {
+  
+  data <- data[which(!is.na(data))]
   
   if (method %in% c('t-distr','t')) {
     
