@@ -220,9 +220,9 @@ hist2d <- function(x, y=NA, nbins=c(25,25), edges=NA) {
 #' @details 
 #' ?
 #' @examples
-#' x <- c(rnorm(n=100, mean=5), rnorm(n=50, mean=3, sd=2))
-#' y <- c(rnorm(n=100, mean=2.5), rnorm(n=50, mean=4, sd=2))
-#' dens2d <- density2d(x=x, y=y, bw=0.5)
+#' x <- c(rnorm(n=100, mean=5), rnorm(n=200, mean=3, sd=2))
+#' y <- c(rnorm(n=100, mean=2), rnorm(n=200, mean=6, sd=2))
+#' dens2d <- density2D(x=x, y=y, bw=0.5)
 #' contour(x=dens2d$x, y=dens2d$y, z=dens2d$z)
 #' @export
 density2D <- function(x, y, bw=1, weights=NULL, n=100, from=NULL, to=NULL, cut=3, na.rm=FALSE) {
