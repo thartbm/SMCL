@@ -48,8 +48,9 @@ coordinates to put in a single scatter diagram (`graphics::points()`).
 ?
 }
 \examples{
-x <- c(rnorm(n=100, mean=5), rnorm(n=50, mean=3, sd=2))
-y <- c(rnorm(n=100, mean=2.5), rnorm(n=50, mean=4, sd=2))
-dens2d <- density2d(x=x, y=y, bw=0.5)
+x <- c(rnorm(n=100, mean=5), rnorm(n=200, mean=3, sd=2))
+y <- c(rnorm(n=100, mean=2), rnorm(n=200, mean=6, sd=2))
+dens2d <- density2D(x=x, y=y, bw=0.5)
 contour(x=dens2d$x, y=dens2d$y, z=dens2d$z)
+points(x,y,col='red')
 }
