@@ -4,8 +4,12 @@
 \alias{generateRandomIDs}
 \title{Generate random participant IDs}
 \usage{
-generateRandomIDs(checkFile = "randomIDs.csv", IDlength = 3,
-  number = 100, addToFile = checkFile)
+generateRandomIDs(
+  checkFile = "randomIDs.csv",
+  IDlength = 3,
+  number = 100,
+  addToFile = checkFile
+)
 }
 \arguments{
 \item{checkFile}{CSV file with previous IDs that should not be duplicated}

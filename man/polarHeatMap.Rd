@@ -4,10 +4,24 @@
 \alias{polarHeatMap}
 \title{Create a plot with a polar heatmap.}
 \usage{
-polarHeatMap(x, y, z, mincol = c(0.94, 0.98, 0.99), maxcol = c(0.06,
-  0.82, 0.88), xlim = NA, ylim = NA, xunit = "degrees",
-  border = NA, bordercol = "white", resolution = 1, alpha = 1,
-  overlay = FALSE, origin = c(0, 0), scale = 1, main = "")
+polarHeatMap(
+  x,
+  y,
+  z,
+  mincol = c(0.94, 0.98, 0.99),
+  maxcol = c(0.06, 0.82, 0.88),
+  xlim = NA,
+  ylim = NA,
+  xunit = "degrees",
+  border = NA,
+  bordercol = "white",
+  resolution = 1,
+  alpha = 1,
+  overlay = FALSE,
+  origin = c(0, 0),
+  scale = 1,
+  main = ""
+)
 }
 \arguments{
 \item{x}{Vector of M+1 angular bin edges.}

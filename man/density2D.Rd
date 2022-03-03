@@ -4,8 +4,17 @@
 \alias{density2D}
 \title{Create matrix representing 2D density.}
 \usage{
-density2D(x, y, bw = 1, weights = NULL, n = 100, from = NULL,
-  to = NULL, cut = 3, na.rm = FALSE)
+density2D(
+  x,
+  y,
+  bw = 1,
+  weights = NULL,
+  n = 100,
+  from = NULL,
+  to = NULL,
+  cut = 3,
+  na.rm = FALSE
+)
 }
 \arguments{
 \item{x}{Vector of X coordinates for density estimation.}

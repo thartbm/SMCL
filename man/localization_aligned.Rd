@@ -4,7 +4,8 @@
 \name{localization_aligned}
 \alias{localization_aligned}
 \title{Aligned localization data points to illustrate circle-fitting}
-\format{Data frame with 25 rows and 8 columns:
+\format{
+Data frame with 25 rows and 8 columns:
 \describe{
   \item{trial}{trial, numbered 0-24}
   \item{targetangle_deg}{angle of actual hand position relative to home}
@@ -14,7 +15,8 @@
   \item{handy_m}{hand position y-coordinate in meters}
   \item{tapx_px}{localization x-coordinate in pixels}
   \item{tapy_px}{localization y-coordinate in pixels}
-}}
+}
+}
 \usage{
 localization_aligned
 }

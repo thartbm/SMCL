@@ -4,10 +4,19 @@
 \alias{trimReach}
 \title{Trim a data frame describing a reach to the interesting part.}
 \usage{
-trimReach(trialdf, homeStart = NA, targetReached = NA,
-  velocity = 0.05, firstMove = FALSE, holdHome = NA,
-  untilHold = NA, device = "hand", posunit = "pix",
-  timeunit = "ms", homepos = c(0, 0))
+trimReach(
+  trialdf,
+  homeStart = NA,
+  targetReached = NA,
+  velocity = 0.05,
+  firstMove = FALSE,
+  holdHome = NA,
+  untilHold = NA,
+  device = "hand",
+  posunit = "pix",
+  timeunit = "ms",
+  homepos = c(0, 0)
+)
 }
 \arguments{
 \item{trialdf}{Data frame representing the reach with variables in columns
