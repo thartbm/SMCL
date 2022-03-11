@@ -2,63 +2,19 @@
 % Please edit documentation in R/circleFit.R
 \name{circleFit}
 \alias{circleFit}
-\title{Get origin for points that should fall on a circle}
+\title{Fit a circle to data}
 \usage{
-circleFit(x, y, radius = 12, verbosity = 0)
+circleFit(X, Y, r = 1, fitr = FALSE)
 }
 \arguments{
-\item{x}{The x-coordinates of the data.}
+\item{X}{Vector of X coordinates}
 
-\item{y}{The y-coordinates of the data.}
+\item{Y}{Vector of Y coordinates}
 
-\item{radius}{The radius of the circle the data should fall on. Usually we 
-have data in centimeters, and movements of 12 centimeters.}
-}
-\value{
-A vector with an x and y coordinate best fitting the circle.
+\item{r}{Radius of the circle the coordinates should be on (default: 1).}
+
+\item{fitr}{(boolean) Should radius be fit? (default: FALSE)}
 }
 \description{
-This utility function can be used to see used to find the 
-optimal central point, where optimal means finding the location where
-the mean distance of each data point to the central point matches the given
-radius best.
-}
-\details{
-?
-}
-\examples{
-
-data("localization_aligned")
-data("localization_unaligned")
-
-localization_aligned <- convert2cm(localization_aligned, from='r')
-localization_aligned <- convert2cm(localization_aligned, from='t')
-
-par(mfrow=c(1,2))
-
-plot(localization_aligned$tapx_cm, localization_aligned$tapy_cm, main='aligned',xlab='cm', ylab='cm', asp=1,bty='n', xlim=c(-2,12),ylim=c(-2,12),col='blue')
-segments(localization_aligned$tapx_cm, localization_aligned$tapy_cm, localization_aligned$handx_cm, localization_aligned$handy_cm, col='blue')
-lines(c(-1,11),c(0,0),col='gray')
-lines(c(0,0),c(-1,11),col='gray')
-lines(cos(seq(0,pi/2,pi/200))*10,sin(seq(0,pi/2,pi/200))*10, col='gray')
-centre <- circleFit(localization_aligned$tapx_cm, localization_aligned$tapy_cm, radius=10)
-points(centre$x, centre$y, col='red')
-lines( (cos(seq(0,pi/2,pi/200))*10) + centre$x, (sin(seq(0,pi/2,pi/200))*10) + centre$y, col='red', lty=2)
-points(localization_aligned$tapx_cm - centre$x, localization_aligned$tapy_cm - centre$y, col='green')
-segments(localization_aligned$tapx_cm - centre$x, localization_aligned$tapy_cm - centre$y, localization_aligned$handx_cm, localization_aligned$handy_cm,, col='green')
-
-
-localization_unaligned <- convert2cm(localization_unaligned, from='r')
-localization_unaligned <- convert2cm(localization_unaligned, from='t')
-
-plot(localization_unaligned$tapx_cm, localization_unaligned$tapy_cm, main='unaligned',xlab='cm', ylab='cm', asp=1,bty='n', xlim=c(-2,12),ylim=c(-2,12),col='blue')
-segments(localization_unaligned$tapx_cm, localization_unaligned$tapy_cm, localization_unaligned$handx_cm, localization_unaligned$handy_cm, col='blue')
-lines(c(-1,11),c(0,0),col='gray')
-lines(c(0,0),c(-1,11),col='gray')
-lines(cos(seq(0,pi/2,pi/200))*10,sin(seq(0,pi/2,pi/200))*10, col='gray')
-centre <- circleFit(localization_unaligned$tapx_cm, localization_unaligned$tapy_cm, radius=10)
-points(centre$x, centre$y, col='red')
-lines( (cos(seq(0,pi/2,pi/200))*10) + centre$x, (sin(seq(0,pi/2,pi/200))*10) + centre$y, col='red', lty=2)
-points(localization_unaligned$tapx_cm - centre$x, localization_unaligned$tapy_cm - centre$y, col='green')
-segments(localization_unaligned$tapx_cm - centre$x, localization_unaligned$tapy_cm - centre$y, localization_unaligned$handx_cm, localization_unaligned$handy_cm,, col='green')
+Fit a circle to data
 }

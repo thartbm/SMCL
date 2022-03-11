@@ -1,102 +1,133 @@
-  #' @title Get origin for points that should fall on a circle
-  #' @param x The x-coordinates of the data.
-  #' @param y The y-coordinates of the data. 
-  #' @param radius The radius of the circle the data should fall on. Usually we 
-  #' have data in centimeters, and movements of 12 centimeters.
-  #' @return A vector with an x and y coordinate best fitting the circle.
-  #' @description This utility function can be used to see used to find the 
-  #' optimal central point, where optimal means finding the location where
-  #' the mean distance of each data point to the central point matches the given
-  #' radius best.
-  #' @details 
-  #' ?
-  #' @examples
-  #' 
-  #' data("localization_aligned")
-  #' data("localization_unaligned")
-  #' 
-  #' localization_aligned <- convert2cm(localization_aligned, from='r')
-  #' localization_aligned <- convert2cm(localization_aligned, from='t')
-  #' 
-  #' par(mfrow=c(1,2))
-  #' 
-  #' plot(localization_aligned$tapx_cm, localization_aligned$tapy_cm, main='aligned',xlab='cm', ylab='cm', asp=1,bty='n', xlim=c(-2,12),ylim=c(-2,12),col='blue')
-  #' segments(localization_aligned$tapx_cm, localization_aligned$tapy_cm, localization_aligned$handx_cm, localization_aligned$handy_cm, col='blue')
-  #' lines(c(-1,11),c(0,0),col='gray')
-  #' lines(c(0,0),c(-1,11),col='gray')
-  #' lines(cos(seq(0,pi/2,pi/200))*10,sin(seq(0,pi/2,pi/200))*10, col='gray')
-  #' centre <- circleFit(localization_aligned$tapx_cm, localization_aligned$tapy_cm, radius=10)
-  #' points(centre$x, centre$y, col='red')
-  #' lines( (cos(seq(0,pi/2,pi/200))*10) + centre$x, (sin(seq(0,pi/2,pi/200))*10) + centre$y, col='red', lty=2)
-  #' points(localization_aligned$tapx_cm - centre$x, localization_aligned$tapy_cm - centre$y, col='green')
-  #' segments(localization_aligned$tapx_cm - centre$x, localization_aligned$tapy_cm - centre$y, localization_aligned$handx_cm, localization_aligned$handy_cm,, col='green')
-  #' 
-  #' 
-  #' localization_unaligned <- convert2cm(localization_unaligned, from='r')
-  #' localization_unaligned <- convert2cm(localization_unaligned, from='t')
-  #' 
-  #' plot(localization_unaligned$tapx_cm, localization_unaligned$tapy_cm, main='unaligned',xlab='cm', ylab='cm', asp=1,bty='n', xlim=c(-2,12),ylim=c(-2,12),col='blue')
-  #' segments(localization_unaligned$tapx_cm, localization_unaligned$tapy_cm, localization_unaligned$handx_cm, localization_unaligned$handy_cm, col='blue')
-  #' lines(c(-1,11),c(0,0),col='gray')
-  #' lines(c(0,0),c(-1,11),col='gray')
-  #' lines(cos(seq(0,pi/2,pi/200))*10,sin(seq(0,pi/2,pi/200))*10, col='gray')
-  #' centre <- circleFit(localization_unaligned$tapx_cm, localization_unaligned$tapy_cm, radius=10)
-  #' points(centre$x, centre$y, col='red')
-  #' lines( (cos(seq(0,pi/2,pi/200))*10) + centre$x, (sin(seq(0,pi/2,pi/200))*10) + centre$y, col='red', lty=2)
-  #' points(localization_unaligned$tapx_cm - centre$x, localization_unaligned$tapy_cm - centre$y, col='green')
-  #' segments(localization_unaligned$tapx_cm - centre$x, localization_unaligned$tapy_cm - centre$y, localization_unaligned$handx_cm, localization_unaligned$handy_cm,, col='green')
-  #' @export
-  circleFit <- function(x, y, radius=12, verbosity=0) {
-    
-    coords  <- data.frame(x, y)
-    
-    if ('optimx' %in% installed.packages()) {
-      
-      library(optimx)
-      
-      lower <- c(min(coords$x)-radius,min(coords$y)-radius)
-      upper <- c(max(coords$x)+radius,max(coords$y)+radius)
-      
-      circlefit <- optimx(par=c('x'=0, 'y'=0), SMCL::circleFitError, gr = NULL, method='L-BFGS-B', lower=lower, upper=upper, coords=coords, radius=radius)
-      
-      return(list('x'=circlefit$x, 'y'=circlefit$y))
-      
-    } else {
+#' Shift localization responses so they are centred on the origin
+#' 
+#' @param df Data frame with localization coordinates (X,Y).
+#' @param unit Unit of the coordinates (default: 'cm')
+#' @param vrbl Variable of coordinates (default: 'tap')
+#' @param r Radius of the circle the coordinates should be on (default: 1).
+#' @param fitr (boolean) Should radius be fit? (default: FALSE)
+#' @return The data frame with corrected \code{tapx_cm} and \code{tapy_cm} 
+#' columns. The corrected localization responses fall closest to a circle with
+#' radius \code{r} (in \code{unit}) and origin (0,0). Only response with
+#' \code{df$selected == 1} are used for this correction.
+#' @details The parameters \code{vrbl} and \code{unit} are combined with a lower
+#' case \code{x} and \code{y}: \code{tapx_cm} and \code{tapy_cm} with default
+#' settings. These should be columns in the data frame (\code{df}).
+#' @examples
+#' 
+#' data("localization_aligned")
+#' data("localization_unaligned")
+#' 
+#' localization_aligned <- convert2cm(localization_aligned, from='r')
+#' localization_aligned <- convert2cm(localization_aligned, from='t')
+#' 
+#' par(mfrow=c(1,2))
+#' 
+#' plot(localization_aligned$tapx_cm, localization_aligned$tapy_cm, 
+#'      main='aligned',xlab='cm', ylab='cm', 
+#'      asp=1,bty='n', xlim=c(-2,12),ylim=c(-2,12),col='blue')
+#' segments(localization_aligned$tapx_cm, localization_aligned$tapy_cm, 
+#'          localization_aligned$handx_cm, localization_aligned$handy_cm, col='blue')
+#' lines(c(-1,11),c(0,0),col='gray')
+#' lines(c(0,0),c(-1,11),col='gray')
+#' lines(cos(seq(0,pi/2,pi/200))*10,sin(seq(0,pi/2,pi/200))*10, col='gray')
+#' centre <- circleFit(localization_aligned$tapx_cm, localization_aligned$tapy_cm, r=10)$par
+#' points(centre['xc'], centre['yc'], col='red')
+#' lines( (cos(seq(0,pi/2,pi/200))*10) + centre['xc'], (sin(seq(0,pi/2,pi/200))*10) + centre['yc'], col='red', lty=2)
+#' points(localization_aligned$tapx_cm - centre['xc'], localization_aligned$tapy_cm - centre['yc'], col='green')
+#' segments(localization_aligned$tapx_cm - centre['xc'], localization_aligned$tapy_cm - centre['yc'], 
+#'          localization_aligned$handx_cm, localization_aligned$handy_cm, col='green')
+#' 
+#' 
+#' localization_unaligned <- convert2cm(localization_unaligned, from='r')
+#' localization_unaligned <- convert2cm(localization_unaligned, from='t')
+#' 
+#' plot(localization_unaligned$tapx_cm, localization_unaligned$tapy_cm, 
+#'      main='unaligned',xlab='cm', ylab='cm', 
+#'      asp=1,bty='n', xlim=c(-2,12),ylim=c(-2,12),col='blue')
+#' segments(localization_unaligned$tapx_cm, localization_unaligned$tapy_cm, 
+#'          localization_unaligned$handx_cm, localization_unaligned$handy_cm, col='blue')
+#' lines(c(-1,11),c(0,0),col='gray')
+#' lines(c(0,0),c(-1,11),col='gray')
+#' lines(cos(seq(0,pi/2,pi/200))*10,sin(seq(0,pi/2,pi/200))*10, col='gray')
+#' centre <- circleFit(localization_unaligned$tapx_cm, localization_unaligned$tapy_cm, r=10)$par
+#' points(centre['xc'], centre['yc'], col='red')
+#' lines( (cos(seq(0,pi/2,pi/200))*10) + centre['xc'], (sin(seq(0,pi/2,pi/200))*10) + centre['yc'], col='red', lty=2)
+#' points(localization_unaligned$tapx_cm - centre['xc'], localization_unaligned$tapy_cm - centre['yc'], col='green')
+#' segments(localization_unaligned$tapx_cm - centre['xc'], localization_unaligned$tapy_cm - centre['yc'], 
+#'          localization_unaligned$handx_cm, localization_unaligned$handy_cm,, col='green')
+#' @export
+circleCorrect <- function(df, unit='cm', vrbl='tap', r=1, fitr=FALSE) {
   
-      if (verbosity > 0) cat('optimx not installed, falling back on optim\n')
-      
-      circlefit <-  optim(par = c('x'=0, 'y'=0), SMCL::circleFitError, gr = NULL, coords=coords, radius=radius)
-      
-      return(list('x'=circlefit$par['x'],'y'=circlefit$par['y']))
-      
-    }
-    
+  if ('selected' %in% names(df)) {
+    idx <- which(df$selected == 1)
+  } else {
+    idx <- seq(1,dim(df)[1])
   }
   
+  tapx <- df[idx,sprintf('%sx_%s',vrbl,unit)]
+  tapy <- df[idx,sprintf('%sy_%s',vrbl,unit)]
   
-  #' @title Errors between coordinates' radial distance to a point and a given 
-  #' radius
-  #' @param par A vector with elements x and y denoting the central point's 
-  #' coordinates.
-  #' @param data A data frame with columns x and y.
-  #' @param radius The radius the points in the data should have relative to a 
-  #' central point.
-  #' @return The mean difference between the radius and the distance between all
-  #' coordinates in the data and the central point.
-  #' @description This utility function can be used to see how well a set of 2D 
-  #' cartesian functions fit on a circle. The criterion it uses is radial 
-  #' distance to a given point. First, the distances of all the data to this 
-  #' point is calculated. Then the target radius is subtracted, resulting in a
-  #' vector of errors. The mean of the squared errors is returned. This number 
-  #' should always be positive and lower is better.
-  #' This function is used to find the optimal central point.
-  #' @details 
-  #' ?
-  #' @examples
-  #' ?
-  #' @export
-  circleFitError <- function(par, coords, radius){
-    
-    return(mean((sqrt((coords$x - par['x'])^2 + (coords$y - par['y'])^2) - radius)^2, na.rm=TRUE))
-    
+  sol <- circleFit(X=tapx,
+                   Y=tapy,
+                   r=r,
+                   fitr=fitr)
+  
+  # this also corrects the non-selected trials:
+  df[,sprintf('%sx_%s',vrbl,unit)] <- df[,sprintf('%sx_%s',vrbl,unit)] - sol$par[['xc']]
+  df[,sprintf('%sy_%s',vrbl,unit)] <- df[,sprintf('%sy_%s',vrbl,unit)] - sol$par[['yc']]
+  
+  return(df)
+  
+}
+
+#' Fit a circle to data
+#'
+#' @param X Vector of X coordinates
+#' @param Y Vector of Y coordinates
+#' @param r Radius of the circle the coordinates should be on (default: 1).
+#' @param fitr (boolean) Should radius be fit? (default: FALSE)
+circleFit <- function(X, Y, r=1, fitr=FALSE) {
+  
+  control <- list('maxit'=10000, 'ndeps'=1e-9 )
+  
+  freepar <- c('xc'=0,'yc'=0)
+  # we can set the starting values for the optimization to 0 
+  # because the data is be pretty close to zero...
+  # but that is not always true for other data sets!
+  if (fitr) {
+    freepar <- c(freepar, 'r'=r)
+    setpar <-  c()
+  } else {
+    setpar  <- c('r'=r)
   }
+  
+  # do we want to use optimx here at some point?
+  sol <- stats::optim(par=freepar, 
+                      circleErrors, 
+                      gr=NULL, 
+                      X, 
+                      Y, 
+                      setpar=setpar, 
+                      control=control)
+  
+  return(sol)
+  
+}
+
+#' Get mean squared error between coordinates and a circle
+#' 
+#' @param freepar Vector with xc and yc parameters: x and y of the circle's middle.
+#' Optionally also includes \code{r}: the radius of the circle.
+#' @param X Vector of X coordinates
+#' @param Y Vector of Y coordinates
+#' @param setpar Vector that can have a fixed radius \code{r}, or can be empty.
+#' @return The mean squared error between the distances of \code{X} and 
+#' \code{Y} from the position in par and the radius \code{r}.
+#' @export
+circleErrors <- function(freepar,X,Y,setpar=c()) {
+  
+  par <- c(freepar, setpar)
+  
+  return(mean((sqrt((X-par[['xc']])^2+(Y-par[['yc']])^2)-par['r'])^2))
+  
+}
